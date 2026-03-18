@@ -1,78 +1,68 @@
 # Dotfiles
 
-My personal terminal setup using:
+Personal macOS terminal configuration managed from a single dotfiles repository.
 
-- Zsh
-- Starship
-- Zellij
+## Repository layout
 
-## What's included
+The installer infers link targets from the repository structure instead of using a fixed list.
 
-- `.zshrc` — shell configuration
-- `zellij/config.kdl` — Zellij configuration
-- `starship/starship.toml` — Starship prompt configuration
-- `install.sh` — setup script
+- Hidden files map to `$HOME`
+- Non-hidden config files map to `$HOME/.config`
+- Nested directories are preserved
 
-## Setup
+Current repo contents:
 
-### 1. Clone the repository
+- `zsh/.zshrc` -> `~/.zshrc`
+- `starship/starship.toml` -> `~/.config/starship.toml`
+- `zellij/config.kdl` -> `~/.config/zellij/config.kdl`
+- `ghostty/config` -> `~/.config/ghostty/config`
 
-    git clone git@github.com:aleixalonso/dotfiles.git ~/.dotfiles
-    cd ~/.dotfiles
+## Install
 
-### 2. Run the install script
+```bash
+git clone git@github.com:aleixalonso/dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
+chmod +x install.sh
+./install.sh
+```
 
-    chmod +x install.sh
-    ./install.sh
+Then reload your shell:
 
-### 3. Reload your shell
+```bash
+source ~/.zshrc
+```
 
-    source ~/.zshrc
+## What `install.sh` does
 
-## What the script does
+- Installs Homebrew if it is missing
+- Installs required dependencies only when the repo/configs imply they are needed
+- Creates required directories automatically
+- Creates symlinks for the config files found in the repo
+- Replaces incorrect symlinks safely
+- Backs up existing real files using a `.backup` suffix
+- Can be run multiple times safely
 
-- Creates required config directories
-- Backs up existing config files if needed
-- Creates symlinks to the files in this repo
+## Dependency inference
 
-## Symlinks created
+The installer currently detects and installs these packages only when relevant:
 
-- `~/.dotfiles/zsh/.zshrc` → `~/.zshrc`
-- `~/.dotfiles/zellij/config.kdl` → `~/.config/zellij/config.kdl`
-- `~/.dotfiles/starship/starship.toml` → `~/.config/starship.toml`
+- `zellij`
+- `starship`
+- `zsh-autosuggestions`
+- `zsh-syntax-highlighting`
+- `nvm`
+- `ghostty`
+- `font-jetbrains-mono-nerd-font`
 
-## Repository structure
+## Updating
 
-    .dotfiles/
-    ├── zsh/
-    │   └── .zshrc
-    ├── zellij/
-    │   └── config.kdl
-    ├── starship/
-    │   └── starship.toml
-    ├── install.sh
-    └── README.md
+```bash
+cd ~/.dotfiles
+git pull
+./install.sh
+```
 
 ## Notes
 
-- Existing files are backed up with a `.backup` suffix
-- You can edit files directly inside `~/.dotfiles`
-
-## Optional dependencies
-
-    brew install zellij starship zsh-autosuggestions zsh-syntax-highlighting nvm
-
-## Update
-
-    cd ~/.dotfiles
-    git pull
-    ./install.sh
-    source ~/.zshrc
-
-## Reset
-
-    rm ~/.zshrc
-    rm ~/.config/zellij/config.kdl
-    rm ~/.config/starship.toml
-
-    ./install.sh
+- Edit the files in this repo directly and rerun `./install.sh`
+- Existing backups are preserved; repeated runs create numbered backups when needed
