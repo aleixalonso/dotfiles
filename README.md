@@ -13,6 +13,7 @@ The installer infers link targets from the repository structure instead of using
 Current repo contents:
 
 - `Brewfile` -> Homebrew package manifest used during install
+- `macos.sh` -> applies personal macOS defaults
 - `zsh/.zshenv` -> `~/.zshenv`
 - `zsh/.zprofile` -> `~/.zprofile`
 - `zsh/.zshrc` -> `~/.zshrc`
@@ -65,6 +66,14 @@ The current `Brewfile` includes the packages already used by this repo:
 cd ~/.dotfiles
 git pull
 ./install.sh
+```
+
+## macOS defaults
+
+Apply the tracked macOS preferences with:
+
+```bash
+./macos.sh
 ```
 
 ## Notes
