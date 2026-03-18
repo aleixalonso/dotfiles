@@ -17,7 +17,7 @@ My personal terminal setup using:
 
 ### 1. Clone the repository
 
-    git clone <YOUR_REPO_URL> ~/.dotfiles
+    git clone git@github.com:aleixalonso/dotfiles.git ~/.dotfiles
     cd ~/.dotfiles
 
 ### 2. Run the install script
