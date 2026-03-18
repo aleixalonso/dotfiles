@@ -13,7 +13,10 @@ The installer infers link targets from the repository structure instead of using
 Current repo contents:
 
 - `Brewfile` -> Homebrew package manifest used during install
+- `zsh/.zshenv` -> `~/.zshenv`
+- `zsh/.zprofile` -> `~/.zprofile`
 - `zsh/.zshrc` -> `~/.zshrc`
+- `zsh/.zsh_functions` -> `~/.zsh_functions`
 - `git/.gitconfig` -> `~/.gitconfig`
 - `git/.gitignore_global` -> `~/.gitignore_global`
 - `starship/starship.toml` -> `~/.config/starship.toml`
@@ -67,6 +70,7 @@ git pull
 ## Notes
 
 - Edit the files in this repo directly and rerun `./install.sh`
+- Zsh is split by responsibility: `.zshenv` for environment, `.zprofile` for login shell setup, `.zshrc` for interactive shell behavior
 - Git uses `~/.gitignore_global` for personal global ignores; the repo's own `.gitignore` is only for this repository
 - Existing backups are preserved; repeated runs create numbered backups when needed
 - `install.sh` is tracked as executable, so `chmod +x install.sh` should not be needed after cloning

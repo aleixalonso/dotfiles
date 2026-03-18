@@ -1,0 +1,17 @@
+load-nvmrc() {
+  local nvm_default_version
+
+  command -v nvm >/dev/null 2>&1 || return
+  nvm_default_version="$(nvm version default)"
+
+  if [[ -f .nvmrc && -r .nvmrc ]]; then
+    nvm use
+  elif [[ "$nvm_default_version" != "N/A" && "$(nvm version)" != "$nvm_default_version" ]]; then
+    echo "Reverting to nvm default version"
+    nvm use default
+  fi
+}
+
+set-terminal-title() {
+  print -Pn "\e]0;$(basename "$PWD")\a"
+}
