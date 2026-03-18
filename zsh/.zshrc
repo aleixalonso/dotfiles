@@ -4,11 +4,26 @@
 typeset -U path PATH
 
 # =========================
+# Homebrew prefix
+# =========================
+if command -v brew >/dev/null 2>&1; then
+  HOMEBREW_PREFIX="$(brew --prefix)"
+elif [[ -d /opt/homebrew ]]; then
+  HOMEBREW_PREFIX="/opt/homebrew"
+elif [[ -d /usr/local ]]; then
+  HOMEBREW_PREFIX="/usr/local"
+else
+  HOMEBREW_PREFIX=""
+fi
+
+# =========================
 # NVM (Node Version Manager)
 # =========================
 export NVM_DIR="$HOME/.nvm"
-[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && . "/opt/homebrew/opt/nvm/nvm.sh"
-[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && . "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+if [[ -n "$HOMEBREW_PREFIX" ]]; then
+  [ -s "$HOMEBREW_PREFIX/opt/nvm/nvm.sh" ] && . "$HOMEBREW_PREFIX/opt/nvm/nvm.sh"
+  [ -s "$HOMEBREW_PREFIX/opt/nvm/etc/bash_completion.d/nvm" ] && . "$HOMEBREW_PREFIX/opt/nvm/etc/bash_completion.d/nvm"
+fi
 
 
 # =========================
@@ -16,9 +31,14 @@ export NVM_DIR="$HOME/.nvm"
 # =========================
 autoload -U add-zsh-hook
 load-nvmrc() {
+  local nvm_default_version
+
+  command -v nvm >/dev/null 2>&1 || return
+  nvm_default_version="$(nvm version default)"
+
   if [[ -f .nvmrc && -r .nvmrc ]]; then
     nvm use
-  elif [[ $(nvm version) != $(nvm version default)  ]]; then
+  elif [[ "$nvm_default_version" != "N/A" && "$(nvm version)" != "$nvm_default_version" ]]; then
     echo "Reverting to nvm default version"
     nvm use default
   fi
@@ -30,13 +50,15 @@ load-nvmrc
 # =========================
 # Homebrew (AFTER nvm)
 # =========================
-export PATH="$PATH:/opt/homebrew/bin"
+if [[ -n "$HOMEBREW_PREFIX" ]]; then
+  export PATH="$PATH:$HOMEBREW_PREFIX/bin"
+fi
 
 # =========================
 # Extra PATHs
 # =========================
 for dir in \
-  "/opt/homebrew/opt/libpq/bin" \
+  "${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/opt/libpq/bin}" \
   "$HOME/.codeium/windsurf/bin" \
   "$HOME/.local/bin" \
   "$HOME/.antigravity/antigravity/bin" \
