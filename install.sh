@@ -25,6 +25,9 @@ brew install \
   zsh-syntax-highlighting \
   nvm
 
+brew tap homebrew/cask-fonts
+brew install --cask font-jetbrains-mono-nerd-font
+
 # =========================
 # Create config dirs
 # =========================
