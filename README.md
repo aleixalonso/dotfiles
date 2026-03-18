@@ -22,7 +22,6 @@ Current repo contents:
 ```bash
 git clone git@github.com:aleixalonso/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
-chmod +x install.sh
 ./install.sh
 ```
 
@@ -66,3 +65,4 @@ git pull
 
 - Edit the files in this repo directly and rerun `./install.sh`
 - Existing backups are preserved; repeated runs create numbered backups when needed
+- `install.sh` is tracked as executable, so `chmod +x install.sh` should not be needed after cloning
