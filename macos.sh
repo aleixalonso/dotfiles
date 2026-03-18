@@ -9,6 +9,9 @@ defaults write com.apple.finder FXPreferredViewStyle -string "clmv"
 # Show the Finder status bar.
 defaults write com.apple.finder ShowStatusBar -bool true
 
+# Set the Dock icon size.
+defaults write com.apple.dock tilesize -int 30
+
 # Remove recent applications from the Dock.
 defaults write com.apple.dock show-recents -bool false
 
