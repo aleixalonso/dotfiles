@@ -13,6 +13,8 @@ The installer infers link targets from the repository structure instead of using
 Current repo contents:
 
 - `Brewfile` -> Homebrew package manifest used during install
+- `Library/Application Support/Cursor/User/settings.json` -> `~/Library/Application Support/Cursor/User/settings.json`
+- `Library/Application Support/Cursor/User/keybindings.json` -> `~/Library/Application Support/Cursor/User/keybindings.json`
 - `macos.sh` -> applies personal macOS defaults
 - `zsh/.zshenv` -> `~/.zshenv`
 - `zsh/.zprofile` -> `~/.zprofile`
