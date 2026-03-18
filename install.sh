@@ -126,42 +126,20 @@ setup_homebrew() {
   eval "$("$BREW_BIN" shellenv)"
 }
 
-install_formula_if_missing() {
-  local formula="$1"
+install_brew_bundle() {
+  local brewfile_path="${DOTFILES_DIR}/Brewfile"
 
-  if "$BREW_BIN" list --formula "$formula" >/dev/null 2>&1; then
-    log "Formula already installed: $formula"
+  if [[ ! -f "$brewfile_path" ]]; then
     return
   fi
 
-  log "Installing formula: $formula"
-  "$BREW_BIN" install "$formula"
-  success "Installed formula: $formula"
-}
+  log "Installing Homebrew packages from Brewfile"
+  "$BREW_BIN" bundle --file "$brewfile_path"
+  success "Installed Homebrew packages from Brewfile"
 
-install_cask_if_missing() {
-  local cask="$1"
-  local existing_app_path=""
-
-  if "$BREW_BIN" list --cask "$cask" >/dev/null 2>&1; then
-    log "Cask already installed: $cask"
-    return
+  if grep -q '^brew "nvm"$' "$brewfile_path"; then
+    ensure_dir "${HOME}/.nvm"
   fi
-
-  case "$cask" in
-    ghostty)
-      existing_app_path="/Applications/Ghostty.app"
-      ;;
-  esac
-
-  if [[ -n "$existing_app_path" && -d "$existing_app_path" ]]; then
-    warn "Skipping cask install for $cask because $existing_app_path already exists"
-    return
-  fi
-
-  log "Installing cask: $cask"
-  "$BREW_BIN" install --cask "$cask"
-  success "Installed cask: $cask"
 }
 
 should_skip_top_level() {
@@ -217,42 +195,6 @@ discover_sources() {
   done < <(find "$DOTFILES_DIR" -mindepth 2 -type f | sort)
 }
 
-install_inferred_dependencies() {
-  local zshrc_path="${DOTFILES_DIR}/zsh/.zshrc"
-  local starship_path="${DOTFILES_DIR}/starship/starship.toml"
-
-  if [[ -d "${DOTFILES_DIR}/zellij" ]]; then
-    install_formula_if_missing "zellij"
-  fi
-
-  if [[ -f "$starship_path" ]]; then
-    install_formula_if_missing "starship"
-
-    if LC_ALL=C grep -q '[^ -~]' "$starship_path"; then
-      install_cask_if_missing "font-jetbrains-mono-nerd-font"
-    fi
-  fi
-
-  if [[ -d "${DOTFILES_DIR}/ghostty" ]]; then
-    install_cask_if_missing "ghostty"
-  fi
-
-  if [[ -f "$zshrc_path" ]]; then
-    if grep -q 'zsh-autosuggestions' "$zshrc_path"; then
-      install_formula_if_missing "zsh-autosuggestions"
-    fi
-
-    if grep -q 'zsh-syntax-highlighting' "$zshrc_path"; then
-      install_formula_if_missing "zsh-syntax-highlighting"
-    fi
-
-    if grep -q '\bnvm\b' "$zshrc_path"; then
-      install_formula_if_missing "nvm"
-      ensure_dir "${HOME}/.nvm"
-    fi
-  fi
-}
-
 main() {
   local source
   local target
@@ -261,7 +203,7 @@ main() {
 
   setup_homebrew
   ensure_dir "$CONFIG_DIR"
-  install_inferred_dependencies
+  install_brew_bundle
 
   while IFS= read -r source; do
     target="$(infer_target_path "$source")"

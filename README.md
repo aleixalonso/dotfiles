@@ -12,6 +12,7 @@ The installer infers link targets from the repository structure instead of using
 
 Current repo contents:
 
+- `Brewfile` -> Homebrew package manifest used during install
 - `zsh/.zshrc` -> `~/.zshrc`
 - `git/.gitconfig` -> `~/.gitconfig`
 - `git/.gitignore_global` -> `~/.gitignore_global`
@@ -36,16 +37,16 @@ source ~/.zshrc
 ## What `install.sh` does
 
 - Installs Homebrew if it is missing
-- Installs required dependencies only when the repo/configs imply they are needed
+- Installs Homebrew packages declared in `Brewfile`
 - Creates required directories automatically
 - Creates symlinks for the config files found in the repo
 - Replaces incorrect symlinks safely
 - Backs up existing real files using a `.backup` suffix
 - Can be run multiple times safely
 
-## Dependency inference
+## Homebrew packages
 
-The installer currently detects and installs these packages only when relevant:
+The current `Brewfile` includes the packages already used by this repo:
 
 - `zellij`
 - `starship`
