@@ -15,6 +15,7 @@ Current repo contents:
 - `Brewfile` -> Homebrew package manifest used during install
 - `Library/Application Support/Cursor/User/settings.json` -> `~/Library/Application Support/Cursor/User/settings.json`
 - `Library/Application Support/Cursor/User/keybindings.json` -> `~/Library/Application Support/Cursor/User/keybindings.json`
+- `bootstrap.sh` -> runs the full dotfiles setup
 - `macos.sh` -> applies personal macOS defaults
 - `zsh/.zshenv` -> `~/.zshenv`
 - `zsh/.zprofile` -> `~/.zprofile`
@@ -31,7 +32,7 @@ Current repo contents:
 ```bash
 git clone git@github.com:aleixalonso/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
-./install.sh
+./bootstrap.sh
 ```
 
 Then reload your shell:
@@ -50,6 +51,20 @@ source ~/.zshrc
 - Backs up existing real files using a `.backup` suffix
 - Can be run multiple times safely
 
+## Bootstrap
+
+Run the full setup with:
+
+```bash
+./bootstrap.sh
+```
+
+To also apply macOS defaults during bootstrap:
+
+```bash
+./bootstrap.sh --macos
+```
+
 ## Homebrew packages
 
 The current `Brewfile` includes the packages already used by this repo:
@@ -67,7 +82,7 @@ The current `Brewfile` includes the packages already used by this repo:
 ```bash
 cd ~/.dotfiles
 git pull
-./install.sh
+./bootstrap.sh
 ```
 
 ## macOS defaults
@@ -81,6 +96,7 @@ Apply the tracked macOS preferences with:
 ## Notes
 
 - Edit the files in this repo directly and rerun `./install.sh`
+- `bootstrap.sh` is the main entrypoint; it runs `install.sh` and can optionally run `macos.sh`
 - Zsh is split by responsibility: `.zshenv` for environment, `.zprofile` for login shell setup, `.zshrc` for interactive shell behavior
 - Git uses `~/.gitignore_global` for personal global ignores; the repo's own `.gitignore` is only for this repository
 - Existing backups are preserved; repeated runs create numbered backups when needed
