@@ -31,6 +31,7 @@ brew install \
 echo "📁 Creating directories..."
 mkdir -p "${HOME}/.config"
 mkdir -p "${HOME}/.config/zellij"
+mkdir -p "${HOME}/.config/ghostty"
 
 # =========================
 # Symlink helper
@@ -64,6 +65,7 @@ echo "🔗 Linking dotfiles..."
 link_file "${DOTFILES_DIR}/zsh/.zshrc" "${HOME}/.zshrc"
 link_file "${DOTFILES_DIR}/zellij/config.kdl" "${HOME}/.config/zellij/config.kdl"
 link_file "${DOTFILES_DIR}/starship/starship.toml" "${HOME}/.config/starship.toml"
+link_file "${DOTFILES_DIR}/ghostty/config" "${HOME}/.config/ghostty/config"
 
 # =========================
 # Done
