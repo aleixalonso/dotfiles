@@ -1,0 +1,21 @@
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editors and tooling
+.idea/
+.vscode/
+*.swp
+*.swo
+*.orig
+
+# Language/tool caches
+node_modules/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local env files
+.env
+.env.local
+.env.*.local

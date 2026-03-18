@@ -13,6 +13,8 @@ The installer infers link targets from the repository structure instead of using
 Current repo contents:
 
 - `zsh/.zshrc` -> `~/.zshrc`
+- `git/.gitconfig` -> `~/.gitconfig`
+- `git/.gitignore_global` -> `~/.gitignore_global`
 - `starship/starship.toml` -> `~/.config/starship.toml`
 - `zellij/config.kdl` -> `~/.config/zellij/config.kdl`
 - `ghostty/config` -> `~/.config/ghostty/config`
@@ -64,5 +66,6 @@ git pull
 ## Notes
 
 - Edit the files in this repo directly and rerun `./install.sh`
+- Git uses `~/.gitignore_global` for personal global ignores; the repo's own `.gitignore` is only for this repository
 - Existing backups are preserved; repeated runs create numbered backups when needed
 - `install.sh` is tracked as executable, so `chmod +x install.sh` should not be needed after cloning
