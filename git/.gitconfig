@@ -1,7 +1,7 @@
 [user]
 	name = Aleix Alonso
 	email = aleixalonso@hotmail.com
-	signingkey = ~/.ssh/id_ed25519.pub
+	signingkey = ~/.ssh/github_key.pub
 
 [gpg]
 	format = ssh
