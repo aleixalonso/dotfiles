@@ -4,6 +4,8 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="${HOME}/.config"
 BREW_BIN=""
+export HOMEBREW_NO_AUTO_UPDATE="${HOMEBREW_NO_AUTO_UPDATE:-1}"
+export HOMEBREW_NO_ENV_HINTS="${HOMEBREW_NO_ENV_HINTS:-1}"
 
 if [[ -t 1 ]]; then
   RED=$'\033[0;31m'
@@ -139,9 +141,21 @@ install_formula_if_missing() {
 
 install_cask_if_missing() {
   local cask="$1"
+  local existing_app_path=""
 
   if "$BREW_BIN" list --cask "$cask" >/dev/null 2>&1; then
     log "Cask already installed: $cask"
+    return
+  fi
+
+  case "$cask" in
+    ghostty)
+      existing_app_path="/Applications/Ghostty.app"
+      ;;
+  esac
+
+  if [[ -n "$existing_app_path" && -d "$existing_app_path" ]]; then
+    warn "Skipping cask install for $cask because $existing_app_path already exists"
     return
   fi
 
@@ -214,7 +228,7 @@ install_inferred_dependencies() {
   if [[ -f "$starship_path" ]]; then
     install_formula_if_missing "starship"
 
-    if grep -q '[^[:ascii:]]' "$starship_path"; then
+    if LC_ALL=C grep -q '[^ -~]' "$starship_path"; then
       install_cask_if_missing "font-jetbrains-mono-nerd-font"
     fi
   fi
