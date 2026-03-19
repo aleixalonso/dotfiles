@@ -12,6 +12,7 @@
 
 [core]
 	excludesfile = ~/.gitignore_global
+	hooksPath = ~/.config/git/hooks
 	editor = cursor --wait
 	pager = less -FRX
 

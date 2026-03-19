@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+load_node_tooling() {
+  if command -v node >/dev/null 2>&1; then
+    return
+  fi
+
+  if [[ -s /opt/homebrew/opt/nvm/nvm.sh ]]; then
+    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    # shellcheck disable=SC1091
+    . /opt/homebrew/opt/nvm/nvm.sh
+  elif [[ -s /usr/local/opt/nvm/nvm.sh ]]; then
+    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    # shellcheck disable=SC1091
+    . /usr/local/opt/nvm/nvm.sh
+  fi
+
+  if command -v nvm >/dev/null 2>&1; then
+    if [[ -f .nvmrc ]]; then
+      nvm use --silent >/dev/null 2>&1 || true
+    else
+      nvm use default --silent >/dev/null 2>&1 || true
+    fi
+  fi
+}
+
+find_cmd() {
+  local local_path="$1"
+  local global_name="$2"
+
+  if [[ -x "$local_path" ]]; then
+    printf '%s\n' "$local_path"
+    return 0
+  fi
+
+  if command -v "$global_name" >/dev/null 2>&1; then
+    command -v "$global_name"
+    return 0
+  fi
+
+  return 1
+}
+
+package_json_has() {
+  local pattern="$1"
+
+  [[ -f package.json ]] && grep -q "$pattern" package.json
+}
+
+has_any_file() {
+  local path
+
+  for path in "$@"; do
+    if [[ -f "$path" ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+stage_files() {
+  local files=("$@")
+
+  if [[ ${#files[@]} -gt 0 ]]; then
+    git add -- "${files[@]}"
+  fi
+}
+
+main() {
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    printf '%s\n' "Not inside a git repository." >&2
+    exit 1
+  fi
+
+  local repo_root
+  repo_root="$(git rev-parse --show-toplevel)"
+  cd "$repo_root"
+
+  load_node_tooling
+
+  local all_files=()
+  local format_files=()
+  local js_files=()
+  local biome_files=()
+  local path
+
+  while IFS= read -r -d '' path; do
+    [[ -f "$path" ]] || continue
+    all_files+=("$path")
+
+    case "$path" in
+      *.js|*.cjs|*.mjs|*.jsx|*.ts|*.tsx)
+        js_files+=("$path")
+        format_files+=("$path")
+        biome_files+=("$path")
+        ;;
+      *.json|*.json5|*.jsonc|*.css|*.scss|*.html|*.md|*.mdx|*.yml|*.yaml|*.graphql|*.gql)
+        format_files+=("$path")
+        ;;
+      *.css|*.graphql|*.gql)
+        biome_files+=("$path")
+        ;;
+    esac
+  done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+  if [[ ${#all_files[@]} -eq 0 ]]; then
+    exit 0
+  fi
+
+  local ran_tool=0
+  local biome_cmd=""
+  local prettier_cmd=""
+  local eslint_cmd=""
+
+  if biome_cmd="$(find_cmd "node_modules/.bin/biome" "biome" 2>/dev/null)" && \
+    (has_any_file biome.json biome.jsonc || package_json_has '"@biomejs/biome"' || package_json_has '"biome"'); then
+    if [[ ${#biome_files[@]} -gt 0 ]]; then
+      "$biome_cmd" check --write --no-errors-on-unmatched --files-ignore-unknown=true "${biome_files[@]}"
+      stage_files "${biome_files[@]}"
+      ran_tool=1
+    fi
+  fi
+
+  if prettier_cmd="$(find_cmd "node_modules/.bin/prettier" "prettier" 2>/dev/null)" && \
+    (has_any_file .prettierrc .prettierrc.json .prettierrc.yml .prettierrc.yaml .prettierrc.json5 .prettierrc.js .prettierrc.cjs .prettierrc.mjs prettier.config.js prettier.config.cjs prettier.config.mjs || package_json_has '"prettier"'); then
+    if [[ ${#format_files[@]} -gt 0 ]]; then
+      "$prettier_cmd" --write "${format_files[@]}"
+      stage_files "${format_files[@]}"
+      ran_tool=1
+    fi
+  fi
+
+  if eslint_cmd="$(find_cmd "node_modules/.bin/eslint" "eslint" 2>/dev/null)" && \
+    (has_any_file eslint.config.js eslint.config.cjs eslint.config.mjs eslint.config.ts .eslintrc .eslintrc.js .eslintrc.cjs .eslintrc.json .eslintrc.yml .eslintrc.yaml || package_json_has '"eslintConfig"' || package_json_has '"eslint"'); then
+    if [[ ${#js_files[@]} -gt 0 ]]; then
+      "$eslint_cmd" --fix "${js_files[@]}"
+      stage_files "${js_files[@]}"
+      ran_tool=1
+    fi
+  fi
+
+  if [[ "$ran_tool" -eq 0 ]]; then
+    printf '%s\n' "No supported repo formatter detected. Skipping staged formatting." >&2
+  fi
+}
+
+main "$@"
