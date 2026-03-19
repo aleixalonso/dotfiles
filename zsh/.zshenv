@@ -20,5 +20,3 @@ for dir in \
 do
   [[ -d "$dir" ]] && path=("$dir" $path)
 done
-
-export EDITOR="cursor -w"

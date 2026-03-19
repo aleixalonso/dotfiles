@@ -32,6 +32,3 @@ bindkey "^[[B" history-beginning-search-forward
 # =========================
 autoload -U select-word-style
 select-word-style bash
-
-add-zsh-hook precmd set-terminal-title
-add-zsh-hook chpwd set-terminal-title
