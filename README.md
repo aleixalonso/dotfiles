@@ -23,8 +23,7 @@ Current repo contents:
 - `zsh/.zsh_functions` -> `~/.zsh_functions`
 - `git/.gitconfig` -> `~/.gitconfig`
 - `git/.gitignore_global` -> `~/.gitignore_global`
-- `git/hooks/pre-commit` -> `~/.config/git/hooks/pre-commit`
-- `git/bin/format-staged` -> `~/.config/git/bin/format-staged`
+- `git/bin/fmt` -> `~/.config/git/bin/fmt`
 - `starship/starship.toml` -> `~/.config/starship.toml`
 - `zellij/config.kdl` -> `~/.config/zellij/config.kdl`
 - `ghostty/config` -> `~/.config/ghostty/config`
@@ -101,7 +100,7 @@ Apply the tracked macOS preferences with:
 - `bootstrap.sh` is the main entrypoint; it runs `install.sh` and can optionally run `macos.sh`
 - Zsh is split by responsibility: `.zshenv` for environment, `.zprofile` for login shell setup, `.zshrc` for interactive shell behavior
 - Git uses `~/.gitignore_global` for personal global ignores; the repo's own `.gitignore` is only for this repository
-- Git uses a global hooks path at `~/.config/git/hooks`; the tracked `pre-commit` hook detects Biome, Prettier, and ESLint from each repo and formats staged files with the matching local or global tool
-- You can run `fmt-staged` manually inside any git repo to format currently staged supported files before committing
+- You can run `fmt` manually inside any git repo to detect Biome, Prettier, and ESLint from the repo and format changed files before staging
+- `fmt path/to/file.ts` also works if you want to target specific files instead of the repo's current modified and untracked files
 - Existing backups are preserved; repeated runs create numbered backups when needed
 - `install.sh` is tracked as executable, so `chmod +x install.sh` should not be needed after cloning

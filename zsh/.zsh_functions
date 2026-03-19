@@ -16,6 +16,6 @@ set-terminal-title() {
   print -Pn "\e]0;$(basename "$PWD")\a"
 }
 
-fmt-staged() {
-  "$HOME/.config/git/bin/format-staged" "$@"
+fmt() {
+  "$HOME/.config/git/bin/fmt" "$@"
 }
