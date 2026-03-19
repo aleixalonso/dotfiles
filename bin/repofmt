@@ -68,6 +68,10 @@ collect_staged_files() {
   git diff --cached --name-only --diff-filter=ACMR -z
 }
 
+collect_all_files() {
+  git ls-files -z
+}
+
 restage_files() {
   local files=("$@")
 
@@ -78,18 +82,20 @@ restage_files() {
 
 usage() {
   cat <<'EOF'
-Usage: repofmt [--staged] [file ...]
+Usage: repofmt [--staged | --all] [file ...]
 
 Formats files using the repo's configured formatter stack.
 
 Options:
   --staged   Format staged files and re-stage them after formatting
+  --all      Format all tracked files in the repository
   --help     Show this help
 
 Examples:
   repofmt
   repofmt src/app.ts
   repofmt --staged
+  repofmt --all
 EOF
 }
 
@@ -106,6 +112,7 @@ main() {
   load_node_tooling
 
   local staged_mode=0
+  local all_mode=0
   local all_files=()
   local format_files=()
   local js_files=()
@@ -116,6 +123,10 @@ main() {
     case "$1" in
       --staged)
         staged_mode=1
+        shift
+        ;;
+      --all)
+        all_mode=1
         shift
         ;;
       --help|-h)
@@ -137,8 +148,18 @@ main() {
     esac
   done
 
+  if [[ "$staged_mode" -eq 1 && "$all_mode" -eq 1 ]]; then
+    printf '%s\n' "repofmt: --staged and --all cannot be combined." >&2
+    exit 1
+  fi
+
   if [[ "$staged_mode" -eq 1 && $# -gt 0 ]]; then
     printf '%s\n' "repofmt: --staged cannot be combined with explicit file paths." >&2
+    exit 1
+  fi
+
+  if [[ "$all_mode" -eq 1 && $# -gt 0 ]]; then
+    printf '%s\n' "repofmt: --all cannot be combined with explicit file paths." >&2
     exit 1
   fi
 
@@ -147,6 +168,11 @@ main() {
       [[ -f "$path" ]] || continue
       all_files+=("$path")
     done
+  elif [[ "$all_mode" -eq 1 ]]; then
+    while IFS= read -r -d '' path; do
+      [[ -f "$path" ]] || continue
+      all_files+=("$path")
+    done < <(collect_all_files)
   elif [[ "$staged_mode" -eq 1 ]]; then
     while IFS= read -r -d '' path; do
       [[ -f "$path" ]] || continue

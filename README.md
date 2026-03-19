@@ -104,5 +104,6 @@ Apply the tracked macOS preferences with:
 - You can run `repofmt` manually inside any git repo to detect Biome, Prettier, and ESLint from the repo and format changed files before staging
 - `repofmt path/to/file.ts` also works if you want to target specific files instead of the repo's current modified and untracked files
 - `repofmt --staged` formats staged files and re-stages them, which is useful if you want to wire it into a repo-local git hook
+- `repofmt --all` formats all tracked files in the current repo
 - Existing backups are preserved; repeated runs create numbered backups when needed
 - `install.sh` is tracked as executable, so `chmod +x install.sh` should not be needed after cloning
