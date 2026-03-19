@@ -138,6 +138,10 @@ keybinds clear-defaults=true {
         }
     }
     shared_except "locked" {
+        // Use Cmd+C to copy the current Zellij selection.
+        bind "Super c" { Copy; }
+        // Use Cmd+K to clear like a normal terminal prompt redraw.
+        bind "Super k" { Write 12; }
         bind "Alt left" { MoveFocusOrTab "left"; }
         bind "Alt down" { MoveFocus "down"; }
         bind "Alt up" { MoveFocus "up"; }
@@ -147,6 +151,7 @@ keybinds clear-defaults=true {
         bind "Alt =" { Resize "Increase"; }
         bind "Alt [" { PreviousSwapLayout; }
         bind "Alt ]" { NextSwapLayout; }
+        // Use Alt+Shift+F for floating panes so Option+Right Arrow can keep sending Alt+f normally.
         bind "Alt Shift f" { ToggleFloatingPanes; }
         bind "Ctrl g" { SwitchToMode "locked"; }
         bind "Alt h" { MoveFocusOrTab "left"; }
@@ -369,7 +374,8 @@ web_client {
 // copy_command "wl-copy"                    // wayland
 // copy_command "pbcopy"                     // osx
 // 
-// copy_command "pbcopy"
+// Use the macOS clipboard directly for Cmd+C / Zellij Copy.
+copy_command "pbcopy"
  
 // Choose the destination for copied text
 // Allows using the primary selection buffer (on x11/wayland) instead of the system clipboard.
