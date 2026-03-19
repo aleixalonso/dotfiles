@@ -64,6 +64,35 @@ collect_default_files() {
   git ls-files -m -o --exclude-standard -z
 }
 
+collect_staged_files() {
+  git diff --cached --name-only --diff-filter=ACMR -z
+}
+
+restage_files() {
+  local files=("$@")
+
+  if [[ ${#files[@]} -gt 0 ]]; then
+    git add -- "${files[@]}"
+  fi
+}
+
+usage() {
+  cat <<'EOF'
+Usage: repofmt [--staged] [file ...]
+
+Formats files using the repo's configured formatter stack.
+
+Options:
+  --staged   Format staged files and re-stage them after formatting
+  --help     Show this help
+
+Examples:
+  repofmt
+  repofmt src/app.ts
+  repofmt --staged
+EOF
+}
+
 main() {
   if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     printf '%s\n' "Not inside a git repository." >&2
@@ -76,17 +105,53 @@ main() {
 
   load_node_tooling
 
+  local staged_mode=0
   local all_files=()
   local format_files=()
   local js_files=()
   local biome_files=()
   local path
 
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --staged)
+        staged_mode=1
+        shift
+        ;;
+      --help|-h)
+        usage
+        exit 0
+        ;;
+      --)
+        shift
+        break
+        ;;
+      -*)
+        printf 'Unknown option: %s\n' "$1" >&2
+        usage >&2
+        exit 1
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+
+  if [[ "$staged_mode" -eq 1 && $# -gt 0 ]]; then
+    printf '%s\n' "repofmt: --staged cannot be combined with explicit file paths." >&2
+    exit 1
+  fi
+
   if [[ $# -gt 0 ]]; then
     for path in "$@"; do
       [[ -f "$path" ]] || continue
       all_files+=("$path")
     done
+  elif [[ "$staged_mode" -eq 1 ]]; then
+    while IFS= read -r -d '' path; do
+      [[ -f "$path" ]] || continue
+      all_files+=("$path")
+    done < <(collect_staged_files)
   else
     while IFS= read -r -d '' path; do
       [[ -f "$path" ]] || continue
@@ -126,6 +191,7 @@ main() {
     (has_any_file biome.json biome.jsonc || package_json_has '"@biomejs/biome"' || package_json_has '"biome"'); then
     if [[ ${#biome_files[@]} -gt 0 ]]; then
       "$biome_cmd" check --write --no-errors-on-unmatched --files-ignore-unknown=true "${biome_files[@]}"
+      [[ "$staged_mode" -eq 1 ]] && restage_files "${biome_files[@]}"
       ran_tool=1
     fi
   fi
@@ -134,6 +200,7 @@ main() {
     (has_any_file .prettierrc .prettierrc.json .prettierrc.yml .prettierrc.yaml .prettierrc.json5 .prettierrc.js .prettierrc.cjs .prettierrc.mjs prettier.config.js prettier.config.cjs prettier.config.mjs || package_json_has '"prettier"'); then
     if [[ ${#format_files[@]} -gt 0 ]]; then
       "$prettier_cmd" --write "${format_files[@]}"
+      [[ "$staged_mode" -eq 1 ]] && restage_files "${format_files[@]}"
       ran_tool=1
     fi
   fi
@@ -142,6 +209,7 @@ main() {
     (has_any_file eslint.config.js eslint.config.cjs eslint.config.mjs eslint.config.ts .eslintrc .eslintrc.js .eslintrc.cjs .eslintrc.json .eslintrc.yml .eslintrc.yaml || package_json_has '"eslintConfig"' || package_json_has '"eslint"'); then
     if [[ ${#js_files[@]} -gt 0 ]]; then
       "$eslint_cmd" --fix "${js_files[@]}"
+      [[ "$staged_mode" -eq 1 ]] && restage_files "${js_files[@]}"
       ran_tool=1
     fi
   fi
