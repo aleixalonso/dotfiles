@@ -21,9 +21,9 @@ Current repo contents:
 - `zsh/.zprofile` -> `~/.zprofile`
 - `zsh/.zshrc` -> `~/.zshrc`
 - `zsh/.zsh_functions` -> `~/.zsh_functions`
+- `bin/repofmt` -> `~/.local/bin/repofmt`
 - `git/.gitconfig` -> `~/.gitconfig`
 - `git/.gitignore_global` -> `~/.gitignore_global`
-- `git/bin/fmt` -> `~/.config/git/bin/fmt`
 - `starship/starship.toml` -> `~/.config/starship.toml`
 - `zellij/config.kdl` -> `~/.config/zellij/config.kdl`
 - `ghostty/config` -> `~/.config/ghostty/config`
@@ -48,6 +48,7 @@ source ~/.zshrc
 - Installs Homebrew packages declared in `Brewfile`
 - Creates required directories automatically
 - Creates symlinks for the config files found in the repo
+- Installs executables from `bin/` into `~/.local/bin`
 - Replaces incorrect symlinks safely
 - Backs up existing real files using a `.backup` suffix
 - Can be run multiple times safely
@@ -100,7 +101,7 @@ Apply the tracked macOS preferences with:
 - `bootstrap.sh` is the main entrypoint; it runs `install.sh` and can optionally run `macos.sh`
 - Zsh is split by responsibility: `.zshenv` for environment, `.zprofile` for login shell setup, `.zshrc` for interactive shell behavior
 - Git uses `~/.gitignore_global` for personal global ignores; the repo's own `.gitignore` is only for this repository
-- You can run `fmt` manually inside any git repo to detect Biome, Prettier, and ESLint from the repo and format changed files before staging
-- `fmt path/to/file.ts` also works if you want to target specific files instead of the repo's current modified and untracked files
+- You can run `repofmt` manually inside any git repo to detect Biome, Prettier, and ESLint from the repo and format changed files before staging
+- `repofmt path/to/file.ts` also works if you want to target specific files instead of the repo's current modified and untracked files
 - Existing backups are preserved; repeated runs create numbered backups when needed
 - `install.sh` is tracked as executable, so `chmod +x install.sh` should not be needed after cloning

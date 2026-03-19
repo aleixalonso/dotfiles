@@ -18,7 +18,7 @@ for dir in \
   "$HOME/.antigravity/antigravity/bin" \
   "$HOME/.opencode/bin"
 do
-  [[ -d "$dir" ]] && path+=("$dir")
+  [[ -d "$dir" ]] && path=("$dir" $path)
 done
 
 export EDITOR="cursor -w"

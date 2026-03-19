@@ -15,7 +15,3 @@ load-nvmrc() {
 set-terminal-title() {
   print -Pn "\e]0;$(basename "$PWD")\a"
 }
-
-fmt() {
-  "$HOME/.config/git/bin/fmt" "$@"
-}
