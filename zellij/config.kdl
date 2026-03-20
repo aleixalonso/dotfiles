@@ -142,29 +142,27 @@ keybinds clear-defaults=true {
         bind "Super c" { Copy; }
         // Clear the pane, then send ESC[9001z so the shell can repaint the prompt.
         bind "Super k" { Clear; Write 27; WriteChars "[9001z"; }
-        // Preserve shell word-delete on macOS terminals that send Option+Delete as Meta+Backspace/Delete.
-        bind "Alt Backspace" "Alt Delete" { Write 27; Write 127; }
-        bind "Alt left" { MoveFocusOrTab "left"; }
-        bind "Alt down" { MoveFocus "down"; }
-        bind "Alt up" { MoveFocus "up"; }
-        bind "Alt right" { MoveFocusOrTab "right"; }
-        bind "Alt +" { Resize "Increase"; }
-        bind "Alt -" { Resize "Decrease"; }
-        bind "Alt =" { Resize "Increase"; }
-        bind "Alt [" { PreviousSwapLayout; }
-        bind "Alt ]" { NextSwapLayout; }
-        // Use Alt+Shift+F for floating panes so Option+Right Arrow can keep sending Alt+f normally.
-        bind "Alt Shift f" { ToggleFloatingPanes; }
+        bind "Ctrl Alt left" { MoveFocusOrTab "left"; }
+        bind "Ctrl Alt down" { MoveFocus "down"; }
+        bind "Ctrl Alt up" { MoveFocus "up"; }
+        bind "Ctrl Alt right" { MoveFocusOrTab "right"; }
+        bind "Ctrl Alt +" { Resize "Increase"; }
+        bind "Ctrl Alt -" { Resize "Decrease"; }
+        bind "Ctrl Alt =" { Resize "Increase"; }
+        bind "Ctrl Alt [" { PreviousSwapLayout; }
+        bind "Ctrl Alt ]" { NextSwapLayout; }
+        // Keep shell/editor Option bindings free by moving Zellij quick actions off bare Alt.
+        bind "Ctrl Alt Shift f" { ToggleFloatingPanes; }
         bind "Ctrl g" { SwitchToMode "locked"; }
-        bind "Alt h" { MoveFocusOrTab "left"; }
-        bind "Alt i" { MoveTab "left"; }
-        bind "Alt j" { MoveFocus "down"; }
-        bind "Alt k" { MoveFocus "up"; }
-        bind "Alt l" { MoveFocusOrTab "right"; }
-        bind "Alt n" { NewPane; }
-        bind "Alt o" { MoveTab "right"; }
-        bind "Alt p" { TogglePaneInGroup; }
-        bind "Alt Shift p" { ToggleGroupMarking; }
+        bind "Ctrl Alt h" { MoveFocusOrTab "left"; }
+        bind "Ctrl Alt i" { MoveTab "left"; }
+        bind "Ctrl Alt j" { MoveFocus "down"; }
+        bind "Ctrl Alt k" { MoveFocus "up"; }
+        bind "Ctrl Alt l" { MoveFocusOrTab "right"; }
+        bind "Ctrl Alt n" { NewPane; }
+        bind "Ctrl Alt o" { MoveTab "right"; }
+        bind "Ctrl Alt p" { TogglePaneInGroup; }
+        bind "Ctrl Alt Shift p" { ToggleGroupMarking; }
         bind "Ctrl q" { Quit; }
     }
     shared_except "locked" "move" {
@@ -459,9 +457,9 @@ copy_command "pbcopy"
 // (Requires restart)
 // Default: true (if the host terminal supports it)
 // 
-// Ghostty/iTerm already handle modified keys well; disable Kitty keyboard here so
-// Option+Delete reaches the shell as the expected Meta+Backspace sequence.
-support_kitty_keyboard_protocol false
+// Keep Kitty keyboard protocol enabled so Zellij can reliably detect Super/Cmd
+// shortcuts such as Cmd+K for clear-screen.
+support_kitty_keyboard_protocol true
 // Whether to make sure a local web server is running when a new Zellij session starts.
 // This web server will allow creating new sessions and attaching to existing ones that have
 // opted in to being shared in the browser.
