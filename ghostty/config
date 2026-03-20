@@ -1,5 +1,6 @@
 window-new-tab-position = end
-macos-option-as-alt = true
+# Keep macOS Option handling for dead keys and symbols like ~ on Spanish layouts.
+macos-option-as-alt = false
 working-directory = home
 window-inherit-working-directory = false
 split-inherit-working-directory = true
