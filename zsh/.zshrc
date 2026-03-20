@@ -27,6 +27,16 @@ fi
 bindkey "^[[A" history-beginning-search-backward
 bindkey "^[[B" history-beginning-search-forward
 
+# In Zellij, ESC[9001z repaints the prompt after Cmd+K clears the pane.
+# Normal Ctrl+L behavior remains unchanged.
+if [[ -n "${ZELLIJ:-}" ]]; then
+  redraw-prompt() {
+    zle reset-prompt
+  }
+  zle -N redraw-prompt
+  bindkey $'\e[9001z' redraw-prompt
+fi
+
 # =========================
 # Word navigation (Option keys)
 # =========================

@@ -138,10 +138,10 @@ keybinds clear-defaults=true {
         }
     }
     shared_except "locked" {
-        // Use Cmd+C to copy the current Zellij selection.
+        // Copy the current Zellij selection with Cmd+C.
         bind "Super c" { Copy; }
-        // Use Cmd+K to clear Zellij scrollback and redraw the prompt.
-        bind "Super k" { Clear; Write 12; }
+        // Clear the pane, then send ESC[9001z so the shell can repaint the prompt.
+        bind "Super k" { Clear; Write 27; WriteChars "[9001z"; }
         bind "Alt left" { MoveFocusOrTab "left"; }
         bind "Alt down" { MoveFocus "down"; }
         bind "Alt up" { MoveFocus "up"; }
