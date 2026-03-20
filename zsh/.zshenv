@@ -18,5 +18,7 @@ for dir in \
   "$HOME/.antigravity/antigravity/bin" \
   "$HOME/.opencode/bin"
 do
-  [[ -d "$dir" ]] && path=("$dir" $path)
+  # Preserve the inherited PATH order in child shells so nvm-managed Node
+  # binaries stay ahead of Homebrew when a shell starts inside zellij.
+  [[ -d "$dir" ]] && path+=("$dir")
 done
