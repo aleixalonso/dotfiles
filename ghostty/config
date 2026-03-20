@@ -1,6 +1,9 @@
 window-new-tab-position = end
 # Keep macOS Option handling for dead keys and symbols like ~ on Spanish layouts.
 macos-option-as-alt = false
+# Ghostty + Zellij drops the plain Option modifier on Delete, so make
+# Option+Delete send backward-kill-word directly.
+keybind = alt+backspace=text:\x17
 working-directory = home
 window-inherit-working-directory = false
 split-inherit-working-directory = true
