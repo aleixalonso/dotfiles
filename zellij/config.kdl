@@ -142,6 +142,8 @@ keybinds clear-defaults=true {
         bind "Super c" { Copy; }
         // Clear the pane, then send ESC[9001z so the shell can repaint the prompt.
         bind "Super k" { Clear; Write 27; WriteChars "[9001z"; }
+        // Preserve shell word-delete on macOS terminals that send Option+Delete as Meta+Backspace/Delete.
+        bind "Alt Backspace" "Alt Delete" { Write 27; Write 127; }
         bind "Alt left" { MoveFocusOrTab "left"; }
         bind "Alt down" { MoveFocus "down"; }
         bind "Alt up" { MoveFocus "up"; }
@@ -457,7 +459,9 @@ copy_command "pbcopy"
 // (Requires restart)
 // Default: true (if the host terminal supports it)
 // 
-// support_kitty_keyboard_protocol false
+// Ghostty/iTerm already handle modified keys well; disable Kitty keyboard here so
+// Option+Delete reaches the shell as the expected Meta+Backspace sequence.
+support_kitty_keyboard_protocol false
 // Whether to make sure a local web server is running when a new Zellij session starts.
 // This web server will allow creating new sessions and attaching to existing ones that have
 // opted in to being shared in the browser.
