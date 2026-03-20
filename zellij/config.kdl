@@ -162,6 +162,8 @@ keybinds clear-defaults=true {
         bind "Ctrl Alt n" { NewPane; }
         bind "Ctrl Alt o" { MoveTab "right"; }
         bind "Ctrl Alt p" { TogglePaneInGroup; }
+        bind "Ctrl Alt t" { NewTab; }
+        bind "Ctrl Alt x" { CloseFocus; }
         bind "Ctrl Alt Shift p" { ToggleGroupMarking; }
         bind "Ctrl q" { Quit; }
     }
