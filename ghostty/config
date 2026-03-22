@@ -1,9 +1,15 @@
 window-new-tab-position = end
+# New tabs/windows should start from the home directory.
+working-directory = home
+window-inherit-working-directory = false
+tab-inherit-working-directory = false
+# Splits should stay in the current pane's working directory.
+split-inherit-working-directory = true
+# Ensure Ghostty receives cwd updates from your shell for split inheritance.
+shell-integration = zsh
+
 # Keep macOS Option handling for dead keys and symbols like ~ on Spanish layouts.
 macos-option-as-alt = false
 # Ghostty + Zellij drops the plain Option modifier on Delete, so make
 # Option+Delete send backward-kill-word directly.
 keybind = alt+backspace=text:\x17
-working-directory = home
-window-inherit-working-directory = false
-split-inherit-working-directory = true
