@@ -13,5 +13,10 @@ load-nvmrc() {
 }
 
 gup() {
+  if [[ -z "$1" ]]; then
+    echo "usage: gup <branch>" >&2
+    return 1
+  fi
+
   git switch "$1" && git up
 }
