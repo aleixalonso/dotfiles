@@ -11,3 +11,7 @@ load-nvmrc() {
     nvm use default
   fi
 }
+
+gup() {
+  git switch "$1" && git up
+}
