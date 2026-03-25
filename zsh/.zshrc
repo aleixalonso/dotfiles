@@ -1,4 +1,6 @@
 autoload -U add-zsh-hook
+autoload -Uz compinit
+compinit
 
 [[ -f "$HOME/.zsh_functions" ]] && source "$HOME/.zsh_functions"
 
@@ -20,6 +22,10 @@ if [[ -n "${HOMEBREW_PREFIX:-}" ]]; then
   [ -f "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ] && source "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
   [ -f "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ] && source "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 fi
+
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}' '+r:|[._-]=* r:|=*'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
 # =========================
 # History
