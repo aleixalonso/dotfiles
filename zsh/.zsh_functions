@@ -20,3 +20,37 @@ gup() {
 
   git switch "$1" && git up
 }
+
+grebase() {
+  local interactive target current
+  interactive=0
+
+  if [[ "$1" == "-i" ]]; then
+    interactive=1
+    shift
+  fi
+
+  target="$1"
+
+  if [[ -z "$target" ]]; then
+    echo "usage: grebase [-i] <branch>" >&2
+    return 1
+  fi
+
+  current="$(git branch --show-current)" || return 1
+
+  if [[ "$current" == "$target" ]]; then
+    echo "already on $target" >&2
+    return 1
+  fi
+
+  git switch "$target" &&
+  git up &&
+  git switch "$current" &&
+  if (( interactive )); then
+    git rebase -i "$target"
+  else
+    git rebase "$target"
+  fi &&
+  echo "Rebase finished. If this branch was previously pushed, use: git push --force-with-lease"
+}
