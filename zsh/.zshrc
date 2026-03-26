@@ -1,17 +1,20 @@
 autoload -U add-zsh-hook
 autoload -Uz compinit
-compinit
+
+ZSH_COMPDUMP="$HOME/.zcompdump-${ZSH_VERSION}"
+if [[ -f "$ZSH_COMPDUMP" ]]; then
+  compinit -C -d "$ZSH_COMPDUMP"
+else
+  compinit -d "$ZSH_COMPDUMP"
+fi
 
 [[ -f "$HOME/.zsh_functions" ]] && source "$HOME/.zsh_functions"
 
-export NVM_DIR="$HOME/.nvm"
-if [[ -n "${HOMEBREW_PREFIX:-}" ]]; then
-  [ -s "$HOMEBREW_PREFIX/opt/nvm/nvm.sh" ] && . "$HOMEBREW_PREFIX/opt/nvm/nvm.sh"
-  [ -s "$HOMEBREW_PREFIX/opt/nvm/etc/bash_completion.d/nvm" ] && . "$HOMEBREW_PREFIX/opt/nvm/etc/bash_completion.d/nvm"
+if [[ -n "${HOMEBREW_PREFIX:-}" && -x "$HOMEBREW_PREFIX/opt/fnm/bin/fnm" ]]; then
+  export FNM_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/fnm"
+  eval "$("$HOMEBREW_PREFIX/opt/fnm/bin/fnm" env --use-on-cd --shell zsh)"
+  fnm use default --silent-if-unchanged >/dev/null 2>&1 || true
 fi
-
-add-zsh-hook chpwd load-nvmrc
-load-nvmrc
 
 # =========================
 # Starship

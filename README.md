@@ -46,6 +46,7 @@ source ~/.zshrc
 
 - Installs Homebrew if it is missing
 - Installs Homebrew packages declared in `Brewfile`
+- Installs the current Node.js LTS with `fnm` when no default is configured yet
 - Creates required directories automatically
 - Creates symlinks for the config files found in the repo
 - Installs executables from `bin/` into `~/.local/bin`
@@ -75,7 +76,7 @@ The current `Brewfile` includes the packages already used by this repo:
 - `starship`
 - `zsh-autosuggestions`
 - `zsh-syntax-highlighting`
-- `nvm`
+- `fnm`
 - `ghostty`
 - `font-jetbrains-mono-nerd-font`
 

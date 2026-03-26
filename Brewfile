@@ -1,4 +1,4 @@
-brew "nvm"
+brew "fnm"
 brew "starship"
 brew "zellij"
 brew "zsh-autosuggestions"

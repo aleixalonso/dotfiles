@@ -137,9 +137,26 @@ install_brew_bundle() {
   "$BREW_BIN" bundle --file "$brewfile_path"
   success "Installed Homebrew packages from Brewfile"
 
-  if grep -q '^brew "nvm"$' "$brewfile_path"; then
-    ensure_dir "${HOME}/.nvm"
+  if grep -q '^brew "fnm"$' "$brewfile_path"; then
+    ensure_dir "${HOME}/.local/share/fnm"
+    ensure_dir "${HOME}/.local/state/fnm_multishells"
   fi
+}
+
+setup_fnm() {
+  if ! command -v fnm >/dev/null 2>&1; then
+    return
+  fi
+
+  if fnm default >/dev/null 2>&1; then
+    log "fnm default already configured"
+    return
+  fi
+
+  log "Installing Node LTS with fnm"
+  fnm install --lts
+  fnm default lts-latest
+  success "Configured fnm with the current LTS Node.js release"
 }
 
 should_skip_top_level() {
@@ -214,6 +231,7 @@ main() {
   setup_homebrew
   ensure_dir "$CONFIG_DIR"
   install_brew_bundle
+  setup_fnm
 
   while IFS= read -r source; do
     target="$(infer_target_path "$source")"
