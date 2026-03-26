@@ -6,21 +6,17 @@ load_node_tooling() {
     return
   fi
 
-  if [[ -s /opt/homebrew/opt/nvm/nvm.sh ]]; then
-    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-    # shellcheck disable=SC1091
-    . /opt/homebrew/opt/nvm/nvm.sh
-  elif [[ -s /usr/local/opt/nvm/nvm.sh ]]; then
-    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-    # shellcheck disable=SC1091
-    . /usr/local/opt/nvm/nvm.sh
-  fi
+  if command -v fnm >/dev/null 2>&1; then
+    export FNM_DIR="${FNM_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/fnm}"
+    # shellcheck disable=SC1090
+    eval "$(fnm env --shell bash)"
 
-  if command -v nvm >/dev/null 2>&1; then
-    if [[ -f .nvmrc ]]; then
-      nvm use --silent >/dev/null 2>&1 || true
-    else
-      nvm use default --silent >/dev/null 2>&1 || true
+    if [[ -f .nvmrc || -f .node-version || -f package.json ]]; then
+      fnm use --install-if-missing --silent-if-unchanged >/dev/null 2>&1 || true
+    fi
+
+    if ! command -v node >/dev/null 2>&1; then
+      fnm use default --silent-if-unchanged >/dev/null 2>&1 || true
     fi
   fi
 }
