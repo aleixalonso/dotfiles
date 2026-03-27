@@ -11,11 +11,7 @@ fi
 path=(
   "${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/bin}"
   "${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/sbin}"
-  "${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/opt/libpq/bin}"
   "${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/opt/fnm/bin}"
-  "$HOME/.codeium/windsurf/bin"
   "$HOME/.local/bin"
-  "$HOME/.antigravity/antigravity/bin"
-  "$HOME/.opencode/bin"
   $path
 )
