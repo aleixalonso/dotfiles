@@ -13,7 +13,9 @@ fi
 if [[ -n "${HOMEBREW_PREFIX:-}" && -x "$HOMEBREW_PREFIX/opt/fnm/bin/fnm" ]]; then
   export FNM_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/fnm"
   eval "$("$HOMEBREW_PREFIX/opt/fnm/bin/fnm" env --use-on-cd --shell zsh)"
-  fnm use default --silent-if-unchanged >/dev/null 2>&1 || true
+  fnm use --silent-if-unchanged >/dev/null 2>&1 || \
+    fnm use default --silent-if-unchanged >/dev/null 2>&1 || true
+  rehash
 fi
 
 # =========================
