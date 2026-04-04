@@ -12,3 +12,10 @@ format = "([$all_status$ahead_behind](bold red)) "
 
 [directory]
 truncation_length = 3
+
+[aws]
+format = 'on [$symbol($profile )(\($region\))]($style) '
+style = "bold yellow"
+
+[aws.profile_aliases]
+default = ""

@@ -1,3 +1,4 @@
+brew "direnv"
 brew "fnm"
 brew "starship"
 brew "zellij"

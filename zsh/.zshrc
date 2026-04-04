@@ -19,6 +19,11 @@ if [[ -n "${HOMEBREW_PREFIX:-}" && -x "$HOMEBREW_PREFIX/opt/fnm/bin/fnm" ]]; the
 fi
 
 # =========================
+# direnv
+# =========================
+eval "$(direnv hook zsh)"
+
+# =========================
 # Starship
 # =========================
 eval "$(starship init zsh)"
