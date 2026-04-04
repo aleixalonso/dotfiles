@@ -163,7 +163,7 @@ should_skip_top_level() {
   local name="$1"
 
   case "$name" in
-    .git|.github)
+    .git|.github|vscode)
       return 0
       ;;
     *)
@@ -211,6 +211,21 @@ infer_target_path() {
   printf '%s\n' "${CONFIG_DIR}/${rel_path}"
 }
 
+link_editor_settings() {
+  local source="${DOTFILES_DIR}/vscode/settings.json"
+
+  if [[ ! -f "$source" ]]; then
+    return
+  fi
+
+  link_file \
+    "$source" \
+    "${HOME}/Library/Application Support/Code/User/settings.json"
+  link_file \
+    "$source" \
+    "${HOME}/Library/Application Support/Cursor/User/settings.json"
+}
+
 discover_sources() {
   local path
   local top_level
@@ -237,6 +252,7 @@ main() {
   ensure_dir "$CONFIG_DIR"
   install_brew_bundle
   setup_fnm
+  link_editor_settings
 
   while IFS= read -r source; do
     target="$(infer_target_path "$source")"

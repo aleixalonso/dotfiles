@@ -13,7 +13,7 @@ The installer infers link targets from the repository structure instead of using
 Current repo contents:
 
 - `Brewfile` -> Homebrew package manifest used during install
-- `Library/Application Support/Cursor/User/settings.json` -> `~/Library/Application Support/Cursor/User/settings.json`
+- `vscode/settings.json` -> shared VS Code-compatible settings linked to both `~/Library/Application Support/Code/User/settings.json` and `~/Library/Application Support/Cursor/User/settings.json`
 - `Library/Application Support/Cursor/User/keybindings.json` -> `~/Library/Application Support/Cursor/User/keybindings.json`
 - `bootstrap.sh` -> runs the full dotfiles setup
 - `macos.sh` -> applies personal macOS defaults
@@ -49,6 +49,7 @@ source ~/.zshrc
 - Installs the current Node.js LTS with `fnm` when no default is configured yet
 - Creates required directories automatically
 - Creates symlinks for the config files found in the repo
+- Links `vscode/settings.json` into both VS Code and Cursor
 - Installs executables from `bin/` into `~/.local/bin`
 - Replaces incorrect symlinks safely
 - Backs up existing real files using a `.backup` suffix
