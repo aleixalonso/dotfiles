@@ -198,6 +198,11 @@ infer_target_path() {
     return
   fi
 
+  if [[ "$top_level" == "ssh" ]]; then
+    printf '%s\n' "${HOME}/.${rel_path}"
+    return
+  fi
+
   if [[ "$rest" == "$base_name" && "$stem" == "$top_level" ]]; then
     printf '%s\n' "${CONFIG_DIR}/${base_name}"
     return
