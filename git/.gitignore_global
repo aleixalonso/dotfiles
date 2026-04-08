@@ -3,6 +3,7 @@
 .LSOverride
 
 # Editors and tooling
+.claude/*.local.json
 .idea/
 .vscode/
 *.swp
