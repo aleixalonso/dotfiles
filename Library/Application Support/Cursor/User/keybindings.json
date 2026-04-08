@@ -981,10 +981,5 @@
   {
     "key": "cmd+l",
     "command": "composerMode.chat"
-  },
-  {
-    "key": "alt+cmd+s",
-    "command": "workbench.action.toggleUnifiedSidebarFromKeyboard",
-    "when": "!isAuxiliaryWindowFocusedContext"
   }
 ]
