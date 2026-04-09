@@ -142,6 +142,7 @@ keybinds clear-defaults=true {
         bind "Super c" { Copy; }
         // Clear the pane, then send ESC[9001z so the shell can repaint the prompt.
         bind "Super k" { Clear; Write 27; WriteChars "[9001z"; }
+        bind "Ctrl Alt d" { NewPane "down"; }
         bind "Ctrl Alt left" { MoveFocusOrTab "left"; }
         bind "Ctrl Alt down" { MoveFocus "down"; }
         bind "Ctrl Alt up" { MoveFocus "up"; }
