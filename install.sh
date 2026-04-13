@@ -198,7 +198,7 @@ infer_target_path() {
     return
   fi
 
-  if [[ "$top_level" == "ssh" ]]; then
+  if [[ "$top_level" == "ssh" || "$top_level" == "claude" ]]; then
     printf '%s\n' "${HOME}/.${rel_path}"
     return
   fi
