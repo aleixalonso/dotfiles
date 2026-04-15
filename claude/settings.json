@@ -37,5 +37,29 @@
       "mcp__linear-server__get_user",
       "mcp__linear-server__list_users"
     ]
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/zellij-attention.sh attention",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/zellij-attention.sh clear",
+            "async": true
+          }
+        ]
+      }
+    ]
   }
 }
