@@ -1,0 +1,41 @@
+{
+  "model": "opus",
+  "enabledPlugins": {
+    "linear@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(yarn build:*)",
+      "Bash(yarn test:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run test:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm run test:*)",
+      "Bash(npx tsc --noEmit:*)",
+      "Bash(yarn tsc --noEmit:*)",
+      "Bash(pnpm tsc --noEmit:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git fetch:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh run view:*)",
+      "mcp__linear-server__get_issue",
+      "mcp__linear-server__list_issues",
+      "mcp__linear-server__list_comments",
+      "mcp__linear-server__get_project",
+      "mcp__linear-server__list_projects",
+      "mcp__linear-server__list_cycles",
+      "mcp__linear-server__search_documentation",
+      "mcp__linear-server__get_user",
+      "mcp__linear-server__list_users"
+    ]
+  }
+}
