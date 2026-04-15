@@ -2,7 +2,7 @@
 # Mark the zellij tab containing this Claude Code pane when it needs attention.
 # Usage: zellij-attention.sh attention|clear
 #
-#   attention  ✴ prefix  — Claude needs user input
+#   attention  ✻ prefix  — Claude needs user input
 #   clear               — restore the tab's original name
 set -eu
 
@@ -11,7 +11,7 @@ command -v zellij >/dev/null 2>&1 || exit 0
 command -v jq     >/dev/null 2>&1 || exit 0
 
 action="${1:-}"
-marker="✴ "
+marker="✻ "
 state_file="/tmp/claude-zellij-tab-${ZELLIJ_SESSION_NAME:-x}-${ZELLIJ_PANE_ID:-x}"
 
 panes_json=$(zellij action list-panes -j -t 2>/dev/null || true)
