@@ -40,34 +40,12 @@
     ]
   },
   "hooks": {
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/zellij-attention.sh attention",
-            "async": true
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/zellij-attention.sh clear",
-            "async": true
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/zellij-attention.sh clear",
+            "command": "~/.claude/hooks/zellij-attention.sh",
             "async": true
           }
         ]
