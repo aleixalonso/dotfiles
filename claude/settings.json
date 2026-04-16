@@ -7,6 +7,7 @@
     "defaultMode": "acceptEdits",
     "allow": [
       "Bash(yarn build:*)",
+      "Bash(yarn jest:*)",
       "Bash(yarn test:*)",
       "Bash(npm run build:*)",
       "Bash(npm test:*)",
