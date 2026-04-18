@@ -12,6 +12,7 @@ path=(
   "${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/bin}"
   "${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/sbin}"
   "${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/opt/fnm/bin}"
+  "$HOME/.cargo/bin"
   "$HOME/.local/bin"
   $path
 )
