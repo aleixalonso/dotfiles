@@ -109,3 +109,22 @@ Apply the tracked macOS preferences with:
 - `repofmt --all` formats all tracked files in the current repo
 - Existing backups are preserved; repeated runs create numbered backups when needed
 - `install.sh` is tracked as executable, so `chmod +x install.sh` should not be needed after cloning
+
+## Per-directory AWS profile switching
+
+`direnv` is hooked into zsh (`zsh/.zshrc`), so any `.envrc` file is loaded automatically when you `cd` into the directory (or any subdirectory) and unloaded when you leave. This is what switches the AWS profile between work contexts — the dotfiles only wire up direnv; the actual profile mapping lives in per-workspace `.envrc` files outside this repo.
+
+The profile itself must exist in the standard AWS config files:
+
+- `~/.aws/credentials` — `[some-profile]` block with `aws_access_key_id` / `aws_secret_access_key`
+- `~/.aws/config` — `[profile some-profile]` block with `region` (and any other profile settings)
+
+Then set it up once per workspace root:
+
+```bash
+cd ~/some-workspace
+echo 'export AWS_PROFILE=some-profile' > .envrc
+direnv allow
+```
+
+Starship then shows the active profile in the prompt (`starship/starship.toml`). Run `direnv allow` again after editing an `.envrc`, since direnv re-prompts on every change for safety.
