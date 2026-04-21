@@ -24,7 +24,7 @@ h() {
 
 if [ -n "$size" ] && [ -n "$pct" ]; then
   [ -z "$used" ] && used=$(awk -v p="$pct" -v s="$size" 'BEGIN { printf "%d", p/100*s }')
-  printf "[%s] %s/%s tokens (%d%%)\n" "$model" "$(h "$used")" "$(h "$size")" "$pct"
+  printf "%s · %s/%s tokens (%d%%)\n" "$model" "$(h "$used")" "$(h "$size")" "$pct"
 else
-  printf "[%s]\n" "$model"
+  printf "%s\n" "$model"
 fi
