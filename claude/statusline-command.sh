@@ -3,6 +3,12 @@ input=$(cat)
 model=$(echo "$input" | jq -r '.model.display_name // empty')
 size=$(echo "$input" | jq -r '.context_window.context_window_size // empty')
 pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
+used=$(echo "$input" | jq -r '
+  .context_window.current_usage as $u |
+  if $u then
+    (($u.input_tokens // 0) + ($u.cache_creation_input_tokens // 0) + ($u.cache_read_input_tokens // 0))
+  else empty end
+')
 
 [ -z "$model" ] && exit 0
 
@@ -17,7 +23,7 @@ h() {
 }
 
 if [ -n "$size" ] && [ -n "$pct" ]; then
-  used=$(awk -v p="$pct" -v s="$size" 'BEGIN { printf "%d", p/100*s }')
+  [ -z "$used" ] && used=$(awk -v p="$pct" -v s="$size" 'BEGIN { printf "%d", p/100*s }')
   printf "[%s] %s/%s tokens (%d%%)\n" "$model" "$(h "$used")" "$(h "$size")" "$pct"
 else
   printf "[%s]\n" "$model"
