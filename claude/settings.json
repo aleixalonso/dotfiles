@@ -76,5 +76,6 @@
     "command": "~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {},
-  "effortLevel": "medium"
+  "effortLevel": "medium",
+  "skipAutoPermissionPrompt": true
 }
