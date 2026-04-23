@@ -34,6 +34,10 @@
       "mcp__linear-server__get_user",
       "mcp__linear-server__list_users"
     ],
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
+    ],
     "defaultMode": "acceptEdits"
   },
   "hooks": {
