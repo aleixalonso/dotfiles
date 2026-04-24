@@ -1,3 +1,12 @@
+gnew() {
+  if [[ -z "$1" ]]; then
+    echo "usage: gnew <new-branch> [base=main]" >&2
+    return 1
+  fi
+  local base="${2:-main}"
+  git switch "$base" && git up && git switch -c "$1"
+}
+
 gup() {
   if [[ -z "$1" ]]; then
     echo "usage: gup <branch>" >&2
