@@ -36,6 +36,13 @@ cd ~/.dotfiles
 ./bootstrap.sh
 ```
 
+If the installer says a directory in your home folder exists but is not writable, it was likely created with `sudo` during an earlier attempt. Fix ownership, then rerun:
+
+```bash
+sudo chown -R "$USER":"$(id -gn)" "$HOME/.cache" "$HOME/.config" "$HOME/.local"
+./bootstrap.sh
+```
+
 Then reload your shell:
 
 ```bash

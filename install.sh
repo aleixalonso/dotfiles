@@ -43,6 +43,15 @@ ensure_dir() {
   local dir="$1"
 
   if [[ -d "$dir" ]]; then
+    if [[ ! -w "$dir" ]]; then
+      error "Directory exists but is not writable: $dir"
+      error "This is usually caused by creating it with sudo."
+      error "Fix ownership with:"
+      error "sudo chown -R \"\$USER\":\"\$(id -gn)\" \"\$HOME/.cache\" \"\$HOME/.config\" \"\$HOME/.local\""
+      error "Then rerun: ./bootstrap.sh"
+      exit 1
+    fi
+
     log "Directory exists: $dir"
     return
   fi
