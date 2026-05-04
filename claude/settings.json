@@ -85,5 +85,6 @@
   },
   "enabledPlugins": {},
   "effortLevel": "medium",
+  "theme": "dark",
   "skipAutoPermissionPrompt": true
 }
