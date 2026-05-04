@@ -31,6 +31,14 @@ Current repo contents:
 ## Install
 
 ```bash
+git clone https://github.com/aleixalonso/dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
+./bootstrap.sh
+```
+
+Or, if you already use GitHub over SSH:
+
+```bash
 git clone git@github.com:aleixalonso/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
 ./bootstrap.sh
