@@ -54,7 +54,7 @@
   },
   "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
   "typescript.preferences.importModuleSpecifier": "relative",
-  "workbench.colorTheme": "Default Dark Modern",
+  "workbench.colorTheme": "Dark Modern",
   "workbench.editorAssociations": {
     "*.svg": "default"
   },
