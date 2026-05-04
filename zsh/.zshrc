@@ -69,3 +69,5 @@ fi
 # =========================
 autoload -U select-word-style
 select-word-style bash
+
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"

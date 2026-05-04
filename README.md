@@ -109,6 +109,7 @@ Apply the tracked macOS preferences with:
 - Edit the files in this repo directly and rerun `./install.sh`
 - `bootstrap.sh` is the main entrypoint; it runs `install.sh` and can optionally run `macos.sh`
 - Zsh is split by responsibility: `.zshenv` for environment, `.zprofile` for login shell setup, `.zshrc` for interactive shell behavior
+- `~/.zshrc.local` is sourced at the end of `~/.zshrc` if it exists, which is useful for machine-local or company-specific shell functions you do not want to track here
 - Git uses `~/.gitignore_global` for personal global ignores; the repo's own `.gitignore` is only for this repository
 - You can run `repofmt` manually inside any git repo to detect Biome, Prettier, and ESLint from the repo and format changed files before staging
 - `repofmt path/to/file.ts` also works if you want to target specific files instead of the repo's current modified and untracked files
@@ -116,6 +117,15 @@ Apply the tracked macOS preferences with:
 - `repofmt --all` formats all tracked files in the current repo
 - Existing backups are preserved; repeated runs create numbered backups when needed
 - `install.sh` is tracked as executable, so `chmod +x install.sh` should not be needed after cloning
+
+Example:
+
+```bash
+cat > ~/.zshrc.local <<'EOF'
+# company-only shell setup
+source "$HOME/path/to/company-zsh-functions.sh"
+EOF
+```
 
 ## Per-directory AWS profile switching
 
