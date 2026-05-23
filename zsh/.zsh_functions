@@ -115,6 +115,64 @@ gbgo() {
   git switch "$branch"
 }
 
+gsl() {
+  git stash list --format='%gd%x09%cr%x09%gs'
+}
+
+gss() {
+  if [[ $# -eq 0 ]]; then
+    git stash push -u
+  else
+    git stash push -u -m "$*"
+  fi
+}
+
+_gstash_pick() {
+  local selection
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
+    gsl
+    return 1
+  fi
+
+  selection="$(
+    gsl |
+    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="stash> " --preview='git stash show --patch --color=always {1}' --preview-window=down,60%
+  )" || return 1
+
+  printf '%s\n' "${selection%%$'\t'*}"
+}
+
+gsa() {
+  local stash
+  stash="$(_gstash_pick)" || return 1
+  git stash apply "$stash"
+}
+
+gsp() {
+  local stash
+  stash="$(_gstash_pick)" || return 1
+  git stash pop "$stash"
+}
+
+gsshow() {
+  local stash
+  stash="$(_gstash_pick)" || return 1
+  git stash show --patch "$stash"
+}
+
+gsd() {
+  local stash answer
+  stash="$(_gstash_pick)" || return 1
+
+  printf 'drop %s? [y/N] ' "$stash" >&2
+  read -r answer
+  if [[ "$answer" == [yY] ]]; then
+    git stash drop "$stash"
+  fi
+}
+
 gwrm() {
   if [[ -z "$1" ]]; then
     echo "usage: gwrm <path>" >&2

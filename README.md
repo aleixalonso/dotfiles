@@ -132,6 +132,12 @@ Functions:
 - `gwnew <new-branch> [base=main]` -> fetch `origin/<base>`, create a sibling worktree for the new branch, then `cd` into it
 - `gwgo [branch-or-path]` -> jump to a worktree; with no argument, pick one interactively with `fzf`
 - `gwrm <path>` -> remove a Git worktree
+- `gsl` -> list Git stashes
+- `gss [message]` -> stash tracked and untracked changes with an optional message
+- `gsa` -> pick a stash with `fzf` and apply it
+- `gsp` -> pick a stash with `fzf` and pop it
+- `gsshow` -> pick a stash with `fzf` and show its patch
+- `gsd` -> pick a stash with `fzf` and drop it after confirmation
 
 Example worktree flow:
 
