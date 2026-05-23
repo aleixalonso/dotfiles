@@ -92,6 +92,29 @@ gwgo() {
   cd "$worktree_path"
 }
 
+gbgo() {
+  local selection branch
+
+  if [[ $# -ne 0 ]]; then
+    echo "usage: gbgo" >&2
+    return 1
+  fi
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
+    git branch --sort=-committerdate
+    return 1
+  fi
+
+  selection="$(
+    git for-each-ref --sort=-committerdate --format='%(refname:short)%09%(committerdate:relative)%09%(subject)' refs/heads |
+    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="branch> "
+  )" || return 1
+
+  branch="${selection%%$'\t'*}"
+  git switch "$branch"
+}
+
 gwrm() {
   if [[ -z "$1" ]]; then
     echo "usage: gwrm <path>" >&2

@@ -125,6 +125,7 @@ Aliases:
 Functions:
 
 - `gnew <new-branch> [base=main]` -> switch to the base branch, update it with `git up`, then create the new branch in the current worktree
+- `gbgo` -> pick a local branch interactively with `fzf` and switch to it
 - `gup <branch>` -> switch to a branch and update it with `git up`
 - `grebase [-i] <branch>` -> update the target branch, switch back, then rebase the current branch onto it
 - `gwl` -> list Git worktrees
