@@ -109,29 +109,45 @@ git pull
 
 Git aliases live in `git/.gitconfig`; shell functions live in `zsh/.zsh_functions`.
 
-Aliases:
+### Aliases
+
+#### Status and history
 
 - `git st` -> short branch-aware status
-- `git co <branch>` -> checkout a branch or path
-- `git sw <branch>` -> switch branches
-- `git br` -> list branches by most recent commit
 - `git lg` -> graph log with refs, one commit per line
 - `git last` -> show the latest commit with changed files
+
+#### Branches and sync
+
+- `git br` -> list branches by most recent commit
+- `git co <branch>` -> checkout a branch or path
+- `git sw <branch>` -> switch branches
+- `git up` -> pull with rebase and autostash
+
+#### Commit edits
+
 - `git amend` -> amend the latest commit without changing its message
 - `git uncommit` -> move the latest commit back into staged changes
 - `git unstage <path>` -> unstage files
-- `git up` -> pull with rebase and autostash
 
-Functions:
+### Functions
+
+#### Branches and updates
 
 - `gnew <new-branch> [base=main]` -> switch to the base branch, update it with `git up`, then create the new branch in the current worktree
 - `gbgo` -> pick a local branch interactively with `fzf` and switch to it
 - `gup <branch>` -> switch to a branch and update it with `git up`
 - `grebase [-i] <branch>` -> update the target branch, switch back, then rebase the current branch onto it
+
+#### Worktrees
+
 - `gwl` -> list Git worktrees
 - `gwnew <new-branch> [base=main]` -> fetch `origin/<base>`, create a sibling worktree for the new branch, then `cd` into it
 - `gwgo [branch-or-path]` -> jump to a worktree; with no argument, pick one interactively with `fzf`
 - `gwrm <path>` -> remove a Git worktree
+
+#### Stash
+
 - `gsl` -> list Git stashes
 - `gss [message]` -> stash tracked and untracked changes with an optional message
 - `gsa` -> pick a stash with `fzf` and apply it
