@@ -19,17 +19,77 @@ gwnew() {
 
   local branch="$1"
   local base="${2:-main}"
-  local root repo parent path safe_branch
+  local root repo parent worktree_path safe_branch
 
   root="$(git rev-parse --show-toplevel)" || return 1
   repo="$(basename "$root")"
   parent="$(dirname "$root")"
   safe_branch="${branch//\//-}"
-  path="$parent/$repo-$safe_branch"
+  worktree_path="$parent/$repo-$safe_branch"
 
   git fetch origin "$base" &&
-  git worktree add -b "$branch" "$path" "origin/$base" &&
-  cd "$path"
+  git worktree add -b "$branch" "$worktree_path" "origin/$base" &&
+  cd "$worktree_path"
+}
+
+gwgo() {
+  local query="$1"
+  local selection worktree_path
+
+  if [[ -z "$query" ]]; then
+    if ! command -v fzf >/dev/null 2>&1; then
+      echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
+      git worktree list
+      return 1
+    fi
+
+    selection="$(
+      git worktree list --porcelain |
+      awk '
+        function emit() {
+          if (wt != "") {
+            printf "%s\t%s\n", branch, wt
+          }
+        }
+        /^worktree / {
+          emit()
+          wt = substr($0, 10)
+          branch = "(detached)"
+        }
+        /^branch / {
+          branch = $2
+          sub(/^refs\/heads\//, "", branch)
+        }
+        END { emit() }
+      ' |
+      fzf --delimiter=$'\t' --with-nth=1,2 --prompt="worktree> "
+    )" || return 1
+
+    worktree_path="${selection#*$'\t'}"
+  else
+    worktree_path="$(
+      git worktree list --porcelain |
+      awk -v q="$query" '
+        /^worktree / { wt = substr($0, 10) }
+        /^branch / {
+          branch = $2
+          sub(/^refs\/heads\//, "", branch)
+          if (branch == q || wt == q || wt ~ "/" q "$") {
+            print wt
+            exit
+          }
+        }
+      '
+    )"
+
+    if [[ -z "$worktree_path" ]]; then
+      echo "no worktree found for: $query" >&2
+      git worktree list
+      return 1
+    fi
+  fi
+
+  cd "$worktree_path"
 }
 
 gwrm() {

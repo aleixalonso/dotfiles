@@ -1,6 +1,7 @@
 brew "awscli"
 brew "direnv"
 brew "exiftool"
+brew "fzf"
 brew "fnm"
 brew "gh"
 brew "starship"

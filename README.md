@@ -92,6 +92,7 @@ The current `Brewfile` includes the packages already used by this repo:
 - `starship`
 - `zsh-autosuggestions`
 - `zsh-syntax-highlighting`
+- `fzf`
 - `fnm`
 - `ghostty`
 - `font-jetbrains-mono-nerd-font`
@@ -128,6 +129,7 @@ Functions:
 - `grebase [-i] <branch>` -> update the target branch, switch back, then rebase the current branch onto it
 - `gwl` -> list Git worktrees
 - `gwnew <new-branch> [base=main]` -> fetch `origin/<base>`, create a sibling worktree for the new branch, then `cd` into it
+- `gwgo [branch-or-path]` -> jump to a worktree; with no argument, pick one interactively with `fzf`
 - `gwrm <path>` -> remove a Git worktree
 
 Example worktree flow:
@@ -137,6 +139,7 @@ gwnew feature/login
 # creates ../current-repo-feature-login from origin/main and enters it
 
 gwl
+gwgo
 gwrm ../current-repo-feature-login
 ```
 
