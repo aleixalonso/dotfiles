@@ -12,21 +12,21 @@ The installer infers link targets from the repository structure instead of using
 
 Current repo contents:
 
-- `Brewfile` -> Homebrew package manifest used during install
-- `vscode/settings.json` -> shared VS Code-compatible settings linked to both `~/Library/Application Support/Code/User/settings.json` and `~/Library/Application Support/Cursor/User/settings.json`
-- `Library/Application Support/Cursor/User/keybindings.json` -> `~/Library/Application Support/Cursor/User/keybindings.json`
-- `bootstrap.sh` -> runs the full dotfiles setup
-- `macos.sh` -> applies personal macOS defaults
-- `zsh/.zshenv` -> `~/.zshenv`
-- `zsh/.zprofile` -> `~/.zprofile`
-- `zsh/.zshrc` -> `~/.zshrc`
-- `zsh/.zsh_functions` -> `~/.zsh_functions`
-- `bin/repofmt` -> `~/.local/bin/repofmt`
-- `git/.gitconfig` -> `~/.gitconfig`
-- `git/.gitignore_global` -> `~/.gitignore_global`
-- `starship/starship.toml` -> `~/.config/starship.toml`
-- `zellij/config.kdl` -> `~/.config/zellij/config.kdl`
-- `ghostty/config` -> `~/.config/ghostty/config`
+- `Brewfile` → Homebrew package manifest used during install
+- `vscode/settings.json` → shared VS Code-compatible settings linked to both `~/Library/Application Support/Code/User/settings.json` and `~/Library/Application Support/Cursor/User/settings.json`
+- `Library/Application Support/Cursor/User/keybindings.json` → `~/Library/Application Support/Cursor/User/keybindings.json`
+- `bootstrap.sh` → runs the full dotfiles setup
+- `macos.sh` → applies personal macOS defaults
+- `zsh/.zshenv` → `~/.zshenv`
+- `zsh/.zprofile` → `~/.zprofile`
+- `zsh/.zshrc` → `~/.zshrc`
+- `zsh/.zsh_functions` → `~/.zsh_functions`
+- `bin/repofmt` → `~/.local/bin/repofmt`
+- `git/.gitconfig` → `~/.gitconfig`
+- `git/.gitignore_global` → `~/.gitignore_global`
+- `starship/starship.toml` → `~/.config/starship.toml`
+- `zellij/config.kdl` → `~/.config/zellij/config.kdl`
+- `ghostty/config` → `~/.config/ghostty/config`
 
 ## Install
 
@@ -113,47 +113,47 @@ Git aliases live in `git/.gitconfig`; shell functions live in `zsh/.zsh_function
 
 #### Status and history
 
-- `git st` -> short branch-aware status
-- `git lg` -> graph log with refs, one commit per line
-- `git last` -> show the latest commit with changed files
+- `git st` → short branch-aware status
+- `git lg` → graph log with refs, one commit per line
+- `git last` → show the latest commit with changed files
 
 #### Branches and sync
 
-- `git br` -> list branches by most recent commit
-- `git co <branch>` -> checkout a branch or path
-- `git sw <branch>` -> switch branches
-- `git up` -> pull with rebase and autostash
+- `git br` → list branches by most recent commit
+- `git co <branch>` → checkout a branch or path
+- `git sw <branch>` → switch branches
+- `git up` → pull with rebase and autostash
 
 #### Commit edits
 
-- `git amend` -> amend the latest commit without changing its message
-- `git uncommit` -> move the latest commit back into staged changes
-- `git unstage <path>` -> unstage files
+- `git amend` → amend the latest commit without changing its message
+- `git uncommit` → move the latest commit back into staged changes
+- `git unstage <path>` → unstage files
 
 ### Functions
 
 #### Branches and updates
 
-- `gnew <new-branch> [base=main]` -> switch to the base branch, update it with `git up`, then create the new branch in the current worktree
-- `gbgo` -> pick a local branch interactively with `fzf` and switch to it
-- `gup <branch>` -> switch to a branch and update it with `git up`
-- `grebase [-i] <branch>` -> update the target branch, switch back, then rebase the current branch onto it
+- `gnew <new-branch> [base=main]` → switch to the base branch, update it with `git up`, then create the new branch in the current worktree
+- `gbgo` → pick a local branch interactively with `fzf` and switch to it
+- `gup <branch>` → switch to a branch and update it with `git up`
+- `grebase [-i] <branch>` → update the target branch, switch back, then rebase the current branch onto it
 
 #### Worktrees
 
-- `gwl` -> list Git worktrees
-- `gwnew <new-branch> [base=main]` -> fetch `origin/<base>`, create a sibling worktree for the new branch, then `cd` into it
-- `gwgo [branch-or-path]` -> jump to a worktree; with no argument, pick one interactively with `fzf`
-- `gwrm <path>` -> remove a Git worktree
+- `gwl` → list Git worktrees
+- `gwnew <new-branch> [base=main]` → fetch `origin/<base>`, create a sibling worktree for the new branch, then `cd` into it
+- `gwgo [branch-or-path]` → jump to a worktree; with no argument, pick one interactively with `fzf`
+- `gwrm <path>` → remove a Git worktree
 
 #### Stash
 
-- `gsl` -> list Git stashes
-- `gss [message]` -> stash tracked and untracked changes with an optional message
-- `gsa` -> pick a stash with `fzf` and apply it
-- `gsp` -> pick a stash with `fzf` and pop it
-- `gsshow` -> pick a stash with `fzf` and show its patch
-- `gsd` -> pick a stash with `fzf` and drop it after confirmation
+- `gsl` → list Git stashes
+- `gss [message]` → stash tracked and untracked changes with an optional message
+- `gsa` → pick a stash with `fzf` and apply it
+- `gsp` → pick a stash with `fzf` and pop it
+- `gsshow` → pick a stash with `fzf` and show its patch
+- `gsd` → pick a stash with `fzf` and drop it after confirmation
 
 Example worktree flow:
 
