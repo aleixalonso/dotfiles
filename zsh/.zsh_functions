@@ -7,6 +7,40 @@ gnew() {
   git switch "$base" && git up && git switch -c "$1"
 }
 
+gwl() {
+  git worktree list
+}
+
+gwnew() {
+  if [[ -z "$1" ]]; then
+    echo "usage: gwnew <new-branch> [base=main]" >&2
+    return 1
+  fi
+
+  local branch="$1"
+  local base="${2:-main}"
+  local root repo parent path safe_branch
+
+  root="$(git rev-parse --show-toplevel)" || return 1
+  repo="$(basename "$root")"
+  parent="$(dirname "$root")"
+  safe_branch="${branch//\//-}"
+  path="$parent/$repo-$safe_branch"
+
+  git fetch origin "$base" &&
+  git worktree add -b "$branch" "$path" "origin/$base" &&
+  cd "$path"
+}
+
+gwrm() {
+  if [[ -z "$1" ]]; then
+    echo "usage: gwrm <path>" >&2
+    return 1
+  fi
+
+  git worktree remove "$1"
+}
+
 gup() {
   if [[ -z "$1" ]]; then
     echo "usage: gup <branch>" >&2

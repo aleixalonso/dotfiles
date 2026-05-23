@@ -104,6 +104,42 @@ git pull
 ./bootstrap.sh
 ```
 
+## Git shortcuts
+
+Git aliases live in `git/.gitconfig`; shell functions live in `zsh/.zsh_functions`.
+
+Aliases:
+
+- `git st` -> short branch-aware status
+- `git co <branch>` -> checkout a branch or path
+- `git sw <branch>` -> switch branches
+- `git br` -> list branches by most recent commit
+- `git lg` -> graph log with refs, one commit per line
+- `git last` -> show the latest commit with changed files
+- `git amend` -> amend the latest commit without changing its message
+- `git uncommit` -> move the latest commit back into staged changes
+- `git unstage <path>` -> unstage files
+- `git up` -> pull with rebase and autostash
+
+Functions:
+
+- `gnew <new-branch> [base=main]` -> switch to the base branch, update it with `git up`, then create the new branch in the current worktree
+- `gup <branch>` -> switch to a branch and update it with `git up`
+- `grebase [-i] <branch>` -> update the target branch, switch back, then rebase the current branch onto it
+- `gwl` -> list Git worktrees
+- `gwnew <new-branch> [base=main]` -> fetch `origin/<base>`, create a sibling worktree for the new branch, then `cd` into it
+- `gwrm <path>` -> remove a Git worktree
+
+Example worktree flow:
+
+```bash
+gwnew feature/login
+# creates ../current-repo-feature-login from origin/main and enters it
+
+gwl
+gwrm ../current-repo-feature-login
+```
+
 ## macOS defaults
 
 Apply the tracked macOS preferences with:
