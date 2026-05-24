@@ -128,7 +128,13 @@ gss() {
 }
 
 _gstash_pick() {
-  local selection
+  local stashes selection
+
+  stashes="$(gsl)" || return 1
+  if [[ -z "$stashes" ]]; then
+    echo "no stashes found" >&2
+    return 1
+  fi
 
   if ! command -v fzf >/dev/null 2>&1; then
     echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
@@ -137,7 +143,7 @@ _gstash_pick() {
   fi
 
   selection="$(
-    gsl |
+    printf '%s\n' "$stashes" |
     fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="stash> " --preview='git stash show --patch --color=always {1} | delta --paging=never --line-numbers --hunk-header-style=omit' --preview-window=down,60%
   )" || return 1
 
