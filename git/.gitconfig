@@ -15,6 +15,12 @@
 	editor = code --wait
 	pager = less -FRX
 
+[pager]
+	diff = delta
+	show = delta
+	log = delta
+	stash = delta
+
 [init]
 	defaultBranch = main
 
@@ -43,6 +49,13 @@
 [diff]
 	algorithm = histogram
 	colorMoved = default
+
+[delta]
+	line-numbers = true
+	hunk-header-style = omit
+
+[interactive]
+	diffFilter = delta --color-only
 
 [branch]
 	sort = -committerdate
