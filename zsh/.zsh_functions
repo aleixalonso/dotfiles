@@ -138,7 +138,7 @@ _gstash_pick() {
 
   selection="$(
     gsl |
-    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="stash> " --preview='git stash show --patch --color=always {1}' --preview-window=down,60%
+    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="stash> " --preview='git stash show --patch --color=always {1} | delta --paging=never --line-numbers --hunk-header-style=omit' --preview-window=down,60%
   )" || return 1
 
   printf '%s\n' "${selection%%$'\t'*}"
@@ -159,7 +159,7 @@ gsp() {
 gsshow() {
   local stash
   stash="$(_gstash_pick)" || return 1
-  git stash show --patch "$stash"
+  git stash show --patch --color=always "$stash" | delta --paging=never --line-numbers --hunk-header-style=omit
 }
 
 gsd() {
