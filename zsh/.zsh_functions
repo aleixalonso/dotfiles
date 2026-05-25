@@ -9,7 +9,13 @@ gbnew() {
 }
 
 _gbranch_list() {
-  git for-each-ref --sort=-committerdate --format='%(refname:short)%09%(committerdate:relative)%09%(subject)' refs/heads
+  local branch updated subject description
+
+  git for-each-ref --sort=-committerdate --format='%(refname:short)%09%(committerdate:relative)%09%(subject)' refs/heads |
+  while IFS=$'\t' read -r branch updated subject; do
+    description="$(git config --get "branch.$branch.description")"
+    printf '%s\t%s\t%s\n' "$branch" "$updated" "${description:-$subject}"
+  done
 }
 
 gbgo() {
@@ -86,6 +92,22 @@ gbrm() {
   if [[ "$answer" == [yY] ]]; then
     git branch -d "$branch"
   fi
+}
+
+gbdesc() {
+  local branch="${1:-$(git branch --show-current)}"
+
+  if [[ -z "$branch" ]]; then
+    echo "usage: gbdesc [branch]" >&2
+    return 1
+  fi
+
+  if ! git show-ref --verify --quiet "refs/heads/$branch"; then
+    echo "no local branch found: $branch" >&2
+    return 1
+  fi
+
+  git branch --edit-description "$branch"
 }
 
 gup() {

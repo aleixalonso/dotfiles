@@ -135,8 +135,9 @@ Git aliases live in `git/.gitconfig`; shell functions live in `zsh/.zsh_function
 #### Branches and updates
 
 - `gbnew <new-branch> [base=main]` → fetch `origin/<base>`, then create the new branch in the current worktree
-- `gbgo` → pick a local branch interactively with `fzf` and switch to it
+- `gbgo` → pick a local branch interactively with `fzf` and switch to it; shows branch descriptions when set
 - `gbrm [branch]` → remove a local branch with `git branch -d`; with no argument, pick one interactively with `fzf`
+- `gbdesc [branch=current]` → edit a local branch description
 - `gup <branch>` → switch to a branch and update it with `git up`
 - `grebase [-i] <branch>` → update the target branch, switch back, then rebase the current branch onto it
 
