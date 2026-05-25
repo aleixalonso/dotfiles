@@ -334,7 +334,7 @@ gsp() {
 gsshow() {
   local stash
   stash="$(_gstash_pick)" || return 1
-  git stash show --patch --color=always "$stash" | delta --paging=never --line-numbers --hunk-header-style=omit
+  git stash show --patch --color=always "$stash" | delta --paging=always --line-numbers --hunk-header-style=omit
 }
 
 gsd() {
