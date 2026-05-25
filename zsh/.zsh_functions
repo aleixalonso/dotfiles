@@ -186,13 +186,68 @@ gsd() {
   fi
 }
 
-gwrm() {
-  if [[ -z "$1" ]]; then
-    echo "usage: gwrm <path>" >&2
+_gworktree_pick() {
+  local current worktrees selection
+
+  current="$(git rev-parse --show-toplevel)" || return 1
+
+  worktrees="$(
+    git worktree list --porcelain |
+    awk -v current="$current" '
+      function emit() {
+        if (wt != "" && wt != current && wt != primary) {
+          printf "%s\t%s\n", branch, wt
+        }
+      }
+      /^worktree / {
+        emit()
+        wt = substr($0, 10)
+        if (primary == "") {
+          primary = wt
+        }
+        branch = "(detached)"
+      }
+      /^branch / {
+        branch = $2
+        sub(/^refs\/heads\//, "", branch)
+      }
+      END { emit() }
+    '
+  )" || return 1
+
+  if [[ -z "$worktrees" ]]; then
+    echo "no removable worktrees found" >&2
     return 1
   fi
 
-  git worktree remove "$1"
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
+    git worktree list
+    return 1
+  fi
+
+  selection="$(
+    printf '%s\n' "$worktrees" |
+    fzf --delimiter=$'\t' --with-nth=1,2 --prompt="remove worktree> " --preview='git -C {2} status --short --branch' --preview-window=down,60%
+  )" || return 1
+
+  printf '%s\n' "${selection#*$'\t'}"
+}
+
+gwrm() {
+  local worktree_path answer
+
+  if [[ -z "$1" ]]; then
+    worktree_path="$(_gworktree_pick)" || return 1
+  else
+    worktree_path="$1"
+  fi
+
+  printf 'remove %s? [y/N] ' "$worktree_path" >&2
+  read -r answer
+  if [[ "$answer" == [yY] ]]; then
+    git worktree remove "$worktree_path"
+  fi
 }
 
 gup() {

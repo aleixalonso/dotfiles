@@ -144,7 +144,7 @@ Git aliases live in `git/.gitconfig`; shell functions live in `zsh/.zsh_function
 - `gwl` → list Git worktrees
 - `gwnew <branch> [base=main]` → create a sibling worktree for an existing branch, or create a new branch from `origin/<base>`, then `cd` into it
 - `gwgo [branch-or-path]` → jump to a worktree; with no argument, pick one interactively with `fzf`
-- `gwrm <path>` → remove a Git worktree
+- `gwrm [path]` → remove a Git worktree; with no argument, pick one interactively with `fzf`
 
 #### Stash
 
@@ -165,7 +165,7 @@ gwnew feature/login
 
 gwl
 gwgo
-gwrm ../current-repo-feature-login
+gwrm
 ```
 
 ## macOS defaults
