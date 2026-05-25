@@ -8,6 +8,10 @@ gbnew() {
   git fetch origin "$base" && git switch -c "$branch" "origin/$base"
 }
 
+_gbranch_list() {
+  git for-each-ref --sort=-committerdate --format='%(refname:short)%09%(committerdate:relative)%09%(subject)' refs/heads
+}
+
 gbgo() {
   local current branches selection branch
 
@@ -17,7 +21,7 @@ gbgo() {
   fi
 
   current="$(git branch --show-current)" || return 1
-  branches="$(git for-each-ref --sort=-committerdate --format='%(refname:short)%09%(committerdate:relative)%09%(subject)' refs/heads)" || return 1
+  branches="$(_gbranch_list)" || return 1
   if [[ -z "$(printf '%s\n' "$branches" | awk -F '\t' -v current="$current" '$1 != current { print; exit }')" ]]; then
     echo "no other branches found" >&2
     return 1
@@ -36,6 +40,52 @@ gbgo() {
 
   branch="${selection%%$'\t'*}"
   git switch "$branch"
+}
+
+_gbranch_pick_removable() {
+  local current branches selection
+
+  current="$(git branch --show-current)" || return 1
+  branches="$(_gbranch_list | awk -F '\t' -v current="$current" '$1 != current')" || return 1
+
+  if [[ -z "$branches" ]]; then
+    echo "no removable branches found" >&2
+    return 1
+  fi
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
+    printf '%s\n' "$branches"
+    return 1
+  fi
+
+  selection="$(
+    printf '%s\n' "$branches" |
+    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="remove branch> "
+  )" || return 1
+
+  printf '%s\n' "${selection%%$'\t'*}"
+}
+
+gbrm() {
+  local branch answer
+
+  if [[ -z "$1" ]]; then
+    branch="$(_gbranch_pick_removable)" || return 1
+  else
+    branch="$1"
+  fi
+
+  if [[ "$branch" == "$(git branch --show-current)" ]]; then
+    echo "cannot remove current branch: $branch" >&2
+    return 1
+  fi
+
+  printf 'remove %s? [y/N] ' "$branch" >&2
+  read -r answer
+  if [[ "$answer" == [yY] ]]; then
+    git branch -d "$branch"
+  fi
 }
 
 gup() {
