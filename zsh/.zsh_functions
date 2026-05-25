@@ -11,6 +11,38 @@ gwl() {
   git worktree list
 }
 
+_gworktree_list() {
+  local exclude_current="${1:-0}"
+  local exclude_primary="${2:-0}"
+  local current
+
+  if [[ "$exclude_current" == "1" ]]; then
+    current="$(git rev-parse --show-toplevel)" || return 1
+  fi
+
+  git worktree list --porcelain |
+  awk -v current="$current" -v exclude_current="$exclude_current" -v exclude_primary="$exclude_primary" '
+    function emit() {
+      if (wt != "" && !(exclude_current == "1" && wt == current) && !(exclude_primary == "1" && wt == primary)) {
+        printf "%s\t%s\n", branch, wt
+      }
+    }
+    /^worktree / {
+      emit()
+      wt = substr($0, 10)
+      if (primary == "") {
+        primary = wt
+      }
+      branch = "(detached)"
+    }
+    /^branch / {
+      branch = $2
+      sub(/^refs\/heads\//, "", branch)
+    }
+    END { emit() }
+  '
+}
+
 gwnew() {
   if [[ -z "$1" ]]; then
     echo "usage: gwnew <branch> [base=main]" >&2
@@ -41,9 +73,15 @@ gwnew() {
 
 gwgo() {
   local query="$1"
-  local selection worktree_path
+  local worktrees selection worktree_path
 
   if [[ -z "$query" ]]; then
+    worktrees="$(_gworktree_list 0 0)" || return 1
+    if [[ -z "${${(f)worktrees}[2]}" ]]; then
+      echo "no other worktrees found" >&2
+      return 1
+    fi
+
     if ! command -v fzf >/dev/null 2>&1; then
       echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
       git worktree list
@@ -51,24 +89,7 @@ gwgo() {
     fi
 
     selection="$(
-      git worktree list --porcelain |
-      awk '
-        function emit() {
-          if (wt != "") {
-            printf "%s\t%s\n", branch, wt
-          }
-        }
-        /^worktree / {
-          emit()
-          wt = substr($0, 10)
-          branch = "(detached)"
-        }
-        /^branch / {
-          branch = $2
-          sub(/^refs\/heads\//, "", branch)
-        }
-        END { emit() }
-      ' |
+      printf '%s\n' "$worktrees" |
       fzf --delimiter=$'\t' --with-nth=1,2 --prompt="worktree> "
     )" || return 1
 
@@ -97,6 +118,46 @@ gwgo() {
   fi
 
   cd "$worktree_path"
+}
+
+_gworktree_pick() {
+  local worktrees selection
+
+  worktrees="$(_gworktree_list 1 1)" || return 1
+
+  if [[ -z "$worktrees" ]]; then
+    echo "no removable worktrees found" >&2
+    return 1
+  fi
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
+    git worktree list
+    return 1
+  fi
+
+  selection="$(
+    printf '%s\n' "$worktrees" |
+    fzf --delimiter=$'\t' --with-nth=1,2 --prompt="remove worktree> " --preview='git -C {2} status --short --branch' --preview-window=down,60%
+  )" || return 1
+
+  printf '%s\n' "${selection#*$'\t'}"
+}
+
+gwrm() {
+  local worktree_path answer
+
+  if [[ -z "$1" ]]; then
+    worktree_path="$(_gworktree_pick)" || return 1
+  else
+    worktree_path="$1"
+  fi
+
+  printf 'remove %s? [y/N] ' "$worktree_path" >&2
+  read -r answer
+  if [[ "$answer" == [yY] ]]; then
+    git worktree remove "$worktree_path"
+  fi
 }
 
 gbgo() {
@@ -183,70 +244,6 @@ gsd() {
   read -r answer
   if [[ "$answer" == [yY] ]]; then
     git stash drop "$stash"
-  fi
-}
-
-_gworktree_pick() {
-  local current worktrees selection
-
-  current="$(git rev-parse --show-toplevel)" || return 1
-
-  worktrees="$(
-    git worktree list --porcelain |
-    awk -v current="$current" '
-      function emit() {
-        if (wt != "" && wt != current && wt != primary) {
-          printf "%s\t%s\n", branch, wt
-        }
-      }
-      /^worktree / {
-        emit()
-        wt = substr($0, 10)
-        if (primary == "") {
-          primary = wt
-        }
-        branch = "(detached)"
-      }
-      /^branch / {
-        branch = $2
-        sub(/^refs\/heads\//, "", branch)
-      }
-      END { emit() }
-    '
-  )" || return 1
-
-  if [[ -z "$worktrees" ]]; then
-    echo "no removable worktrees found" >&2
-    return 1
-  fi
-
-  if ! command -v fzf >/dev/null 2>&1; then
-    echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
-    git worktree list
-    return 1
-  fi
-
-  selection="$(
-    printf '%s\n' "$worktrees" |
-    fzf --delimiter=$'\t' --with-nth=1,2 --prompt="remove worktree> " --preview='git -C {2} status --short --branch' --preview-window=down,60%
-  )" || return 1
-
-  printf '%s\n' "${selection#*$'\t'}"
-}
-
-gwrm() {
-  local worktree_path answer
-
-  if [[ -z "$1" ]]; then
-    worktree_path="$(_gworktree_pick)" || return 1
-  else
-    worktree_path="$1"
-  fi
-
-  printf 'remove %s? [y/N] ' "$worktree_path" >&2
-  read -r answer
-  if [[ "$answer" == [yY] ]]; then
-    git worktree remove "$worktree_path"
   fi
 }
 
