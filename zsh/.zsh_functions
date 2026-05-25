@@ -13,7 +13,7 @@ gwl() {
 
 gwnew() {
   if [[ -z "$1" ]]; then
-    echo "usage: gwnew <new-branch> [base=main]" >&2
+    echo "usage: gwnew <branch> [base=main]" >&2
     return 1
   fi
 
@@ -27,8 +27,15 @@ gwnew() {
   safe_branch="${branch//\//-}"
   worktree_path="$parent/$repo-$safe_branch"
 
-  git fetch origin "$base" &&
-  git worktree add -b "$branch" "$worktree_path" "origin/$base" &&
+  if git show-ref --verify --quiet "refs/heads/$branch"; then
+    git worktree add "$worktree_path" "$branch"
+  elif git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+    git fetch origin "$branch" &&
+    git worktree add --track -b "$branch" "$worktree_path" "origin/$branch"
+  else
+    git fetch origin "$base" &&
+    git worktree add -b "$branch" "$worktree_path" "origin/$base"
+  fi &&
   cd "$worktree_path"
 }
 

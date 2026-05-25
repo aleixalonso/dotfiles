@@ -142,7 +142,7 @@ Git aliases live in `git/.gitconfig`; shell functions live in `zsh/.zsh_function
 #### Worktrees
 
 - `gwl` → list Git worktrees
-- `gwnew <new-branch> [base=main]` → fetch `origin/<base>`, create a sibling worktree for the new branch, then `cd` into it
+- `gwnew <branch> [base=main]` → create a sibling worktree for an existing branch, or create a new branch from `origin/<base>`, then `cd` into it
 - `gwgo [branch-or-path]` → jump to a worktree; with no argument, pick one interactively with `fzf`
 - `gwrm <path>` → remove a Git worktree
 
@@ -159,7 +159,9 @@ Example worktree flow:
 
 ```bash
 gwnew feature/login
-# creates ../current-repo-feature-login from origin/main and enters it
+# enters a new ../current-repo-feature-login worktree
+# if feature/login exists, it uses that branch
+# otherwise it creates feature/login from origin/main
 
 gwl
 gwgo
