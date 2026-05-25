@@ -9,12 +9,17 @@ gbnew() {
 }
 
 _gbranch_list() {
-  local branch updated subject description
+  local branch updated subject description summary display_branch
 
   git for-each-ref --sort=-committerdate --format='%(refname:short)%09%(committerdate:relative)%09%(subject)' refs/heads |
   while IFS=$'\t' read -r branch updated subject; do
     description="$(git config --get "branch.$branch.description")"
-    printf '%s\t%s\t%s\n' "$branch" "$updated" "${description:-$subject}"
+    summary="${description:-$subject}"
+    display_branch="$branch"
+    if (( ${#display_branch} > 24 )); then
+      display_branch="${display_branch[1,21]}..."
+    fi
+    printf '%-24s  %-14s  %s\t%s\t%s\t%s\t%s\n' "$display_branch" "$updated" "$summary" "$branch" "$branch" "$updated" "$summary"
   done
 }
 
@@ -41,10 +46,11 @@ gbgo() {
 
   selection="$(
     printf '%s\n' "$branches" |
-    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="branch> "
+    fzf --delimiter=$'\t' --with-nth=1 --prompt="branch> " --preview='printf "%s\n%s\n" {3} {5}' --preview-window=down,3,wrap
   )" || return 1
 
-  branch="${selection%%$'\t'*}"
+  branch="${selection#*$'\t'}"
+  branch="${branch%%$'\t'*}"
   git switch "$branch"
 }
 
@@ -67,9 +73,10 @@ _gbranch_pick_removable() {
 
   selection="$(
     printf '%s\n' "$branches" |
-    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="remove branch> "
+    fzf --delimiter=$'\t' --with-nth=1 --prompt="remove branch> " --preview='printf "%s\n%s\n" {3} {5}' --preview-window=down,3,wrap
   )" || return 1
 
+  selection="${selection#*$'\t'}"
   printf '%s\n' "${selection%%$'\t'*}"
 }
 
@@ -220,10 +227,12 @@ gwnew() {
 gwgo() {
   local query="$1"
   local worktrees selection worktree_path
+  local -a worktree_lines
 
   if [[ -z "$query" ]]; then
     worktrees="$(_gworktree_list 0 0)" || return 1
-    if [[ -z "${${(f)worktrees}[2]}" ]]; then
+    worktree_lines=("${(@f)worktrees}")
+    if (( ${#worktree_lines} < 2 )); then
       echo "no other worktrees found" >&2
       return 1
     fi
@@ -335,7 +344,7 @@ _gstash_pick() {
 
   selection="$(
     printf '%s\n' "$stashes" |
-    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="stash> " --preview='git stash show --patch --color=always {1} | delta --paging=never --line-numbers --hunk-header-style=omit' --preview-window=down,60%,wrap
+    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="stash> " --preview='printf "%s  %s\n%s\n" {1} {2} {3}; git stash show --patch --color=always {1} | delta --paging=never --line-numbers --hunk-header-style=omit' --preview-window=down,60%,wrap
   )" || return 1
 
   printf '%s\n' "${selection%%$'\t'*}"
