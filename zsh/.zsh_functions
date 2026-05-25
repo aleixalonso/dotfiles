@@ -1,10 +1,84 @@
-gnew() {
+gbnew() {
   if [[ -z "$1" ]]; then
-    echo "usage: gnew <new-branch> [base=main]" >&2
+    echo "usage: gbnew <new-branch> [base=main]" >&2
     return 1
   fi
+  local branch="$1"
   local base="${2:-main}"
-  git switch "$base" && git up && git switch -c "$1"
+  git fetch origin "$base" && git switch -c "$branch" "origin/$base"
+}
+
+gbgo() {
+  local current branches selection branch
+
+  if [[ $# -ne 0 ]]; then
+    echo "usage: gbgo" >&2
+    return 1
+  fi
+
+  current="$(git branch --show-current)" || return 1
+  branches="$(git for-each-ref --sort=-committerdate --format='%(refname:short)%09%(committerdate:relative)%09%(subject)' refs/heads)" || return 1
+  if [[ -z "$(printf '%s\n' "$branches" | awk -F '\t' -v current="$current" '$1 != current { print; exit }')" ]]; then
+    echo "no other branches found" >&2
+    return 1
+  fi
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
+    git branch --sort=-committerdate
+    return 1
+  fi
+
+  selection="$(
+    printf '%s\n' "$branches" |
+    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="branch> "
+  )" || return 1
+
+  branch="${selection%%$'\t'*}"
+  git switch "$branch"
+}
+
+gup() {
+  if [[ -z "$1" ]]; then
+    echo "usage: gup <branch>" >&2
+    return 1
+  fi
+
+  git switch "$1" && git up
+}
+
+grebase() {
+  local interactive target current
+  interactive=0
+
+  if [[ "$1" == "-i" ]]; then
+    interactive=1
+    shift
+  fi
+
+  target="$1"
+
+  if [[ -z "$target" ]]; then
+    echo "usage: grebase [-i] <branch>" >&2
+    return 1
+  fi
+
+  current="$(git branch --show-current)" || return 1
+
+  if [[ "$current" == "$target" ]]; then
+    echo "already on $target" >&2
+    return 1
+  fi
+
+  git switch "$target" &&
+  git up &&
+  git switch "$current" &&
+  if (( interactive )); then
+    git rebase -i "$target"
+  else
+    git rebase "$target"
+  fi &&
+  echo "Rebase finished. If this branch was previously pushed, use: git push --force-with-lease"
 }
 
 gwl() {
@@ -160,36 +234,6 @@ gwrm() {
   fi
 }
 
-gbgo() {
-  local current branches selection branch
-
-  if [[ $# -ne 0 ]]; then
-    echo "usage: gbgo" >&2
-    return 1
-  fi
-
-  current="$(git branch --show-current)" || return 1
-  branches="$(git for-each-ref --sort=-committerdate --format='%(refname:short)%09%(committerdate:relative)%09%(subject)' refs/heads)" || return 1
-  if [[ -z "$(printf '%s\n' "$branches" | awk -F '\t' -v current="$current" '$1 != current { print; exit }')" ]]; then
-    echo "no other branches found" >&2
-    return 1
-  fi
-
-  if ! command -v fzf >/dev/null 2>&1; then
-    echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
-    git branch --sort=-committerdate
-    return 1
-  fi
-
-  selection="$(
-    printf '%s\n' "$branches" |
-    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="branch> "
-  )" || return 1
-
-  branch="${selection%%$'\t'*}"
-  git switch "$branch"
-}
-
 gsl() {
   git stash list --format='%gd%x09%cr%x09%gs'
 }
@@ -252,47 +296,4 @@ gsd() {
   if [[ "$answer" == [yY] ]]; then
     git stash drop "$stash"
   fi
-}
-
-gup() {
-  if [[ -z "$1" ]]; then
-    echo "usage: gup <branch>" >&2
-    return 1
-  fi
-
-  git switch "$1" && git up
-}
-
-grebase() {
-  local interactive target current
-  interactive=0
-
-  if [[ "$1" == "-i" ]]; then
-    interactive=1
-    shift
-  fi
-
-  target="$1"
-
-  if [[ -z "$target" ]]; then
-    echo "usage: grebase [-i] <branch>" >&2
-    return 1
-  fi
-
-  current="$(git branch --show-current)" || return 1
-
-  if [[ "$current" == "$target" ]]; then
-    echo "already on $target" >&2
-    return 1
-  fi
-
-  git switch "$target" &&
-  git up &&
-  git switch "$current" &&
-  if (( interactive )); then
-    git rebase -i "$target"
-  else
-    git rebase "$target"
-  fi &&
-  echo "Rebase finished. If this branch was previously pushed, use: git push --force-with-lease"
 }
