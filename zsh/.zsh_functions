@@ -313,7 +313,7 @@ _gstash_pick() {
 
   selection="$(
     printf '%s\n' "$stashes" |
-    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="stash> " --preview='git stash show --patch --color=always {1} | delta --paging=never --line-numbers --hunk-header-style=omit' --preview-window=down,60%
+    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="stash> " --preview='git stash show --patch --color=always {1} | delta --paging=never --line-numbers --hunk-header-style=omit' --preview-window=down,60%,wrap
   )" || return 1
 
   printf '%s\n' "${selection%%$'\t'*}"
