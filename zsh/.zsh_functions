@@ -161,10 +161,17 @@ gwrm() {
 }
 
 gbgo() {
-  local selection branch
+  local current branches selection branch
 
   if [[ $# -ne 0 ]]; then
     echo "usage: gbgo" >&2
+    return 1
+  fi
+
+  current="$(git branch --show-current)" || return 1
+  branches="$(git for-each-ref --sort=-committerdate --format='%(refname:short)%09%(committerdate:relative)%09%(subject)' refs/heads)" || return 1
+  if [[ -z "$(printf '%s\n' "$branches" | awk -F '\t' -v current="$current" '$1 != current { print; exit }')" ]]; then
+    echo "no other branches found" >&2
     return 1
   fi
 
@@ -175,7 +182,7 @@ gbgo() {
   fi
 
   selection="$(
-    git for-each-ref --sort=-committerdate --format='%(refname:short)%09%(committerdate:relative)%09%(subject)' refs/heads |
+    printf '%s\n' "$branches" |
     fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="branch> "
   )" || return 1
 
