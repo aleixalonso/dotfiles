@@ -197,7 +197,22 @@ _gworktree_list() {
     function emit() {
       if (wt != "" && !(exclude_current == "1" && wt == current) && !(exclude_primary == "1" && wt == primary)) {
         display_branch = truncate(branch, 24)
-        printf "%-24s  %s\t%s\t%s\n", display_branch, wt, wt, branch
+        description = ""
+        command = "git config --get branch." branch ".description"
+        if ((command | getline description) <= 0) {
+          description = ""
+        }
+        close(command)
+        subject = ""
+        if (description == "") {
+          command = "git log -1 --format=%s " branch
+          if ((command | getline subject) <= 0) {
+            subject = ""
+          }
+          close(command)
+        }
+        summary = description != "" ? description : subject
+        printf "%-24s  %s\t%s\t%s\t%s\n", display_branch, wt, wt, branch, summary
       }
     }
     /^worktree / {
@@ -283,7 +298,7 @@ gwgo() {
 
     selection="$(
       printf '%s\n' "$worktrees" |
-      fzf --delimiter=$'\t' --with-nth=1 --prompt="switch worktree> " --preview='printf "%s\n%s\n\n" {3} {2}; git -C {2} status --short --branch' --preview-window=down,60%,wrap
+      fzf --delimiter=$'\t' --with-nth=1 --prompt="switch worktree> " --preview='printf "%s\n%s\n%s\n\n" {3} {4} {2}; git -C {2} status --short --branch' --preview-window=down,60%,wrap
     )" || return 1
 
     worktree_path="${selection#*$'\t'}"
@@ -332,7 +347,7 @@ _gworktree_pick() {
 
   selection="$(
     printf '%s\n' "$worktrees" |
-    fzf --delimiter=$'\t' --with-nth=1 --prompt="remove worktree> " --preview='printf "%s\n%s\n\n" {3} {2}; git -C {2} status --short --branch' --preview-window=down,60%,wrap
+    fzf --delimiter=$'\t' --with-nth=1 --prompt="remove worktree> " --preview='printf "%s\n%s\n%s\n\n" {3} {4} {2}; git -C {2} status --short --branch' --preview-window=down,60%,wrap
   )" || return 1
 
   selection="${selection#*$'\t'}"
