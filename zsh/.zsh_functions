@@ -187,9 +187,16 @@ _gworktree_list() {
 
   git worktree list --porcelain |
   awk -v current="$current" -v exclude_current="$exclude_current" -v exclude_primary="$exclude_primary" '
+    function truncate(value, width) {
+      if (length(value) > width) {
+        return substr(value, 1, width - 3) "..."
+      }
+      return value
+    }
     function emit() {
       if (wt != "" && !(exclude_current == "1" && wt == current) && !(exclude_primary == "1" && wt == primary)) {
-        printf "%s\t%s\n", branch, wt
+        display_branch = truncate(branch, 24)
+        printf "%-24s  %s\t%s\t%s\n", display_branch, wt, wt, branch
       }
     }
     /^worktree / {
@@ -275,10 +282,11 @@ gwgo() {
 
     selection="$(
       printf '%s\n' "$worktrees" |
-      fzf --delimiter=$'\t' --with-nth=1,2 --prompt="worktree> "
+      fzf --delimiter=$'\t' --with-nth=1 --prompt="worktree> " --preview='printf "%s\n%s\n\n" {3} {2}; git -C {2} status --short --branch' --preview-window=down,60%,wrap
     )" || return 1
 
     worktree_path="${selection#*$'\t'}"
+    worktree_path="${worktree_path%%$'\t'*}"
   else
     worktree_path="$(
       git worktree list --porcelain |
@@ -323,10 +331,11 @@ _gworktree_pick() {
 
   selection="$(
     printf '%s\n' "$worktrees" |
-    fzf --delimiter=$'\t' --with-nth=1,2 --prompt="remove worktree> " --preview='git -C {2} status --short --branch' --preview-window=down,60%
+    fzf --delimiter=$'\t' --with-nth=1 --prompt="remove worktree> " --preview='printf "%s\n%s\n\n" {3} {2}; git -C {2} status --short --branch' --preview-window=down,60%,wrap
   )" || return 1
 
-  printf '%s\n' "${selection#*$'\t'}"
+  selection="${selection#*$'\t'}"
+  printf '%s\n' "${selection%%$'\t'*}"
 }
 
 gwrm() {
