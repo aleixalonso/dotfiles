@@ -23,18 +23,12 @@ _gbranch_list() {
   done
 }
 
-gbgo() {
-  local current branches selection branch
+_gbranch_pick() {
+  local branches selection
 
-  if [[ $# -ne 0 ]]; then
-    echo "usage: gbgo" >&2
-    return 1
-  fi
-
-  current="$(git branch --show-current)" || return 1
   branches="$(_gbranch_list)" || return 1
-  if [[ -z "$(printf '%s\n' "$branches" | awk -F '\t' -v current="$current" '$1 != current { print; exit }')" ]]; then
-    echo "no other branches found" >&2
+  if [[ -z "$branches" ]]; then
+    echo "no branches found" >&2
     return 1
   fi
 
@@ -49,8 +43,26 @@ gbgo() {
     fzf --delimiter=$'\t' --with-nth=1 --prompt="branch> " --preview='printf "%s\n%s\n" {3} {5}' --preview-window=down,3,wrap
   )" || return 1
 
-  branch="${selection#*$'\t'}"
-  branch="${branch%%$'\t'*}"
+  selection="${selection#*$'\t'}"
+  printf '%s\n' "${selection%%$'\t'*}"
+}
+
+gbgo() {
+  local current branches branch
+
+  if [[ $# -ne 0 ]]; then
+    echo "usage: gbgo" >&2
+    return 1
+  fi
+
+  current="$(git branch --show-current)" || return 1
+  branches="$(_gbranch_list)" || return 1
+  if [[ -z "$(printf '%s\n' "$branches" | awk -F '\t' -v current="$current" '$2 != current { print; exit }')" ]]; then
+    echo "no other branches found" >&2
+    return 1
+  fi
+
+  branch="$(_gbranch_pick)" || return 1
   git switch "$branch"
 }
 
@@ -197,20 +209,38 @@ _gworktree_list() {
 }
 
 gwnew() {
-  if [[ -z "$1" ]]; then
-    echo "usage: gwnew <branch> [base=main]" >&2
-    return 1
-  fi
-
   local branch="$1"
   local base="${2:-main}"
-  local root repo parent worktree_path safe_branch
+  local root repo parent worktree_path safe_branch existing_worktree
+
+  if [[ -z "$branch" ]]; then
+    branch="$(_gbranch_pick)" || return 1
+  fi
 
   root="$(git rev-parse --show-toplevel)" || return 1
   repo="$(basename "$root")"
   parent="$(dirname "$root")"
   safe_branch="${branch//\//-}"
   worktree_path="$parent/$repo-$safe_branch"
+  existing_worktree="$(
+    git worktree list --porcelain |
+    awk -v q="$branch" '
+      /^worktree / { wt = substr($0, 10) }
+      /^branch / {
+        branch = $2
+        sub(/^refs\/heads\//, "", branch)
+        if (branch == q) {
+          print wt
+          exit
+        }
+      }
+    '
+  )"
+
+  if [[ -n "$existing_worktree" ]]; then
+    cd "$existing_worktree"
+    return
+  fi
 
   if git show-ref --verify --quiet "refs/heads/$branch"; then
     git worktree add "$worktree_path" "$branch"

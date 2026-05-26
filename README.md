@@ -144,7 +144,7 @@ Git aliases live in `git/.gitconfig`; shell functions live in `zsh/.zsh_function
 #### Worktrees
 
 - `gwl` → list Git worktrees
-- `gwnew <branch> [base=main]` → create a sibling worktree for an existing branch, or create a new branch from `origin/<base>`, then `cd` into it
+- `gwnew [branch] [base=main]` → create or jump to a sibling worktree for a branch; with no argument, pick a local branch interactively with `fzf`
 - `gwgo [branch-or-path]` → jump to a worktree; with no argument, pick one interactively with `fzf`
 - `gwrm [path]` → remove a Git worktree; with no argument, pick one interactively with `fzf`
 
