@@ -25,6 +25,7 @@ _gbranch_list() {
 
 _gbranch_pick() {
   local branches selection
+  local prompt="${1:-branch> }"
 
   branches="$(_gbranch_list)" || return 1
   if [[ -z "$branches" ]]; then
@@ -40,7 +41,7 @@ _gbranch_pick() {
 
   selection="$(
     printf '%s\n' "$branches" |
-    fzf --delimiter=$'\t' --with-nth=1 --prompt="branch> " --preview='printf "%s\n%s\n" {3} {5}' --preview-window=down,3,wrap
+    fzf --delimiter=$'\t' --with-nth=1 --prompt="$prompt" --preview='printf "%s\n%s\n" {3} {5}' --preview-window=down,3,wrap
   )" || return 1
 
   selection="${selection#*$'\t'}"
@@ -62,7 +63,7 @@ gbgo() {
     return 1
   fi
 
-  branch="$(_gbranch_pick)" || return 1
+  branch="$(_gbranch_pick "switch branch> ")" || return 1
   git switch "$branch"
 }
 
@@ -221,7 +222,7 @@ gwnew() {
   local root repo parent worktree_path safe_branch existing_worktree
 
   if [[ -z "$branch" ]]; then
-    branch="$(_gbranch_pick)" || return 1
+    branch="$(_gbranch_pick "new worktree branch> ")" || return 1
   fi
 
   root="$(git rev-parse --show-toplevel)" || return 1
@@ -282,7 +283,7 @@ gwgo() {
 
     selection="$(
       printf '%s\n' "$worktrees" |
-      fzf --delimiter=$'\t' --with-nth=1 --prompt="worktree> " --preview='printf "%s\n%s\n\n" {3} {2}; git -C {2} status --short --branch' --preview-window=down,60%,wrap
+      fzf --delimiter=$'\t' --with-nth=1 --prompt="switch worktree> " --preview='printf "%s\n%s\n\n" {3} {2}; git -C {2} status --short --branch' --preview-window=down,60%,wrap
     )" || return 1
 
     worktree_path="${selection#*$'\t'}"
@@ -368,6 +369,7 @@ gss() {
 
 _gstash_pick() {
   local stashes selection
+  local prompt="${1:-stash> }"
 
   stashes="$(gsl)" || return 1
   if [[ -z "$stashes" ]]; then
@@ -383,7 +385,7 @@ _gstash_pick() {
 
   selection="$(
     printf '%s\n' "$stashes" |
-    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="stash> " --preview='printf "%s  %s\n%s\n" {1} {2} {3}; git stash show --patch --color=always {1} | delta --paging=never --line-numbers --hunk-header-style=omit' --preview-window=down,60%,wrap
+    fzf --delimiter=$'\t' --with-nth=1,2,3 --prompt="$prompt" --preview='printf "%s  %s\n%s\n" {1} {2} {3}; git stash show --patch --color=always {1} | delta --paging=never --line-numbers --hunk-header-style=omit' --preview-window=down,60%,wrap
   )" || return 1
 
   printf '%s\n' "${selection%%$'\t'*}"
@@ -391,25 +393,25 @@ _gstash_pick() {
 
 gsa() {
   local stash
-  stash="$(_gstash_pick)" || return 1
+  stash="$(_gstash_pick "apply stash> ")" || return 1
   git stash apply "$stash"
 }
 
 gsp() {
   local stash
-  stash="$(_gstash_pick)" || return 1
+  stash="$(_gstash_pick "pop stash> ")" || return 1
   git stash pop "$stash"
 }
 
 gsshow() {
   local stash
-  stash="$(_gstash_pick)" || return 1
+  stash="$(_gstash_pick "show stash> ")" || return 1
   git stash show --patch --color=always "$stash" | delta --paging=always --line-numbers --hunk-header-style=omit
 }
 
 gsd() {
   local stash answer
-  stash="$(_gstash_pick)" || return 1
+  stash="$(_gstash_pick "drop stash> ")" || return 1
 
   printf 'drop %s? [y/N] ' "$stash" >&2
   read -r answer
