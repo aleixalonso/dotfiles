@@ -151,10 +151,10 @@ Git aliases live in `git/.gitconfig`; shell functions live in `zsh/.zsh_function
 #### Stash
 
 - `gsl` → list Git stashes
-- `gss [message]` → stash tracked and untracked changes with an optional message
+- `gsm <message>` → stash tracked and untracked changes with a message
 - `gsa` → pick a stash with `fzf` and apply it
 - `gsp` → pick a stash with `fzf` and pop it
-- `gsshow` → pick a stash with `fzf` and show its patch
+- `gss` → pick a stash with `fzf` and show its patch
 - `gsd` → pick a stash with `fzf` and drop it after confirmation
 
 Example worktree flow:

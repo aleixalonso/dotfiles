@@ -374,12 +374,13 @@ gsl() {
   git stash list --format='%gd%x09%cr%x09%gs'
 }
 
-gss() {
+gsm() {
   if [[ $# -eq 0 ]]; then
-    git stash push -u
-  else
-    git stash push -u -m "$*"
+    echo "usage: gsm <message>" >&2
+    return 1
   fi
+
+  git stash push -u -m "$*"
 }
 
 _gstash_pick() {
@@ -418,7 +419,7 @@ gsp() {
   git stash pop "$stash"
 }
 
-gsshow() {
+gss() {
   local stash
   stash="$(_gstash_pick "show stash> ")" || return 1
   git stash show --patch --color=always "$stash" | delta --paging=always --line-numbers --hunk-header-style=omit
