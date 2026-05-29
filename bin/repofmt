@@ -44,6 +44,19 @@ package_json_has() {
   [[ -f package.json ]] && grep -q "$pattern" package.json
 }
 
+package_json_has_in_repo() {
+  local pattern="$1"
+  local package_json
+
+  while IFS= read -r -d '' package_json; do
+    if grep -q "$pattern" "$package_json"; then
+      return 0
+    fi
+  done < <(find . \( -path './.git' -o -path './node_modules' -o -path '*/node_modules' \) -prune -o -type f -name package.json -print0)
+
+  return 1
+}
+
 has_any_file() {
   local path
 
@@ -51,6 +64,19 @@ has_any_file() {
     if [[ -f "$path" ]]; then
       return 0
     fi
+  done
+
+  return 1
+}
+
+has_any_file_in_repo() {
+  local filename
+  local path
+
+  for filename in "$@"; do
+    while IFS= read -r -d '' path; do
+      return 0
+    done < <(find . \( -path './.git' -o -path './node_modules' -o -path '*/node_modules' \) -prune -o -type f -name "$filename" -print0 -quit)
   done
 
   return 1
@@ -210,7 +236,7 @@ main() {
   local eslint_cmd=""
 
   if biome_cmd="$(find_cmd "node_modules/.bin/biome" "biome" 2>/dev/null)" && \
-    (has_any_file biome.json biome.jsonc || package_json_has '"@biomejs/biome"' || package_json_has '"biome"'); then
+    (has_any_file_in_repo biome.json biome.jsonc || package_json_has_in_repo '"@biomejs/biome"' || package_json_has_in_repo '"biome"'); then
     if [[ ${#biome_files[@]} -gt 0 ]]; then
       "$biome_cmd" check --write --no-errors-on-unmatched --files-ignore-unknown=true "${biome_files[@]}"
       [[ "$staged_mode" -eq 1 ]] && restage_files "${biome_files[@]}"
@@ -228,7 +254,7 @@ main() {
   fi
 
   if eslint_cmd="$(find_cmd "node_modules/.bin/eslint" "eslint" 2>/dev/null)" && \
-    (has_any_file eslint.config.js eslint.config.cjs eslint.config.mjs eslint.config.ts .eslintrc .eslintrc.js .eslintrc.cjs .eslintrc.json .eslintrc.yml .eslintrc.yaml || package_json_has '"eslintConfig"' || package_json_has '"eslint"'); then
+    (has_any_file_in_repo eslint.config.js eslint.config.cjs eslint.config.mjs eslint.config.ts .eslintrc .eslintrc.js .eslintrc.cjs .eslintrc.json .eslintrc.yml .eslintrc.yaml || package_json_has_in_repo '"eslintConfig"' || package_json_has_in_repo '"eslint"'); then
     if [[ ${#js_files[@]} -gt 0 ]]; then
       "$eslint_cmd" --fix "${js_files[@]}"
       [[ "$staged_mode" -eq 1 ]] && restage_files "${js_files[@]}"
