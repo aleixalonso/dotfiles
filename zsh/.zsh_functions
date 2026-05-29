@@ -476,45 +476,83 @@ _keepawake_setup() {
   return "$install_status"
 }
 
+_keepawake_usage() {
+  echo "usage: keepawake [--setup] [--status|--on|--off|command ...]" >&2
+}
+
 keepawake() {
   local previous exit_status
+  local setup=0
+  local mode=""
 
-  case "${1:-}" in
+  while (( $# > 0 )); do
+    case "$1" in
+      --setup)
+        setup=1
+        shift
+        ;;
+      --status|--on|--off)
+        mode="$1"
+        shift
+        break
+        ;;
+      --help)
+        _keepawake_usage
+        return
+        ;;
+      --)
+        shift
+        break
+        ;;
+      --*)
+        echo "unknown option: $1" >&2
+        _keepawake_usage
+        return 1
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+
+  if (( setup )); then
+    _keepawake_setup || return 1
+    if [[ -z "$mode" && $# -eq 0 ]]; then
+      echo "persistent sudoers rule installed"
+      _keepawake_status
+      return
+    fi
+  fi
+
+  case "$mode" in
     --status)
-      if (( $# != 1 )); then
-        echo "usage: keepawake --status" >&2
+      if (( $# != 0 )); then
+        _keepawake_usage
         return 1
       fi
       _keepawake_status
       return
       ;;
     --on)
-      if (( $# != 1 )); then
-        echo "usage: keepawake --on" >&2
+      if (( $# != 0 )); then
+        _keepawake_usage
         return 1
       fi
-      _keepawake_setup || return 1
       sudo pmset disablesleep 1 || return 1
       _keepawake_status
       return
       ;;
     --off)
-      if (( $# != 1 )); then
-        echo "usage: keepawake --off" >&2
+      if (( $# != 0 )); then
+        _keepawake_usage
         return 1
       fi
-      _keepawake_setup || return 1
       sudo pmset disablesleep 0 || return 1
       _keepawake_status
       return
       ;;
-    --help)
-      echo "usage: keepawake [--status|--on|--off|command ...]" >&2
-      return
-      ;;
   esac
 
-  _keepawake_setup || return 1
   previous="$(_sleep_disabled_value)"
   sudo pmset disablesleep 1 || return 1
   echo "lid-close sleep disabled; Ctrl-C to restore"

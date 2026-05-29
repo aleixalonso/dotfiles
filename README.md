@@ -157,6 +157,24 @@ Git aliases live in `git/.gitconfig`; shell functions live in `zsh/.zsh_function
 - `gss` → pick a stash with `fzf` and show its patch
 - `gsd` → pick a stash with `fzf` and drop it after confirmation
 
+#### macOS sleep
+
+- `keepawake [command ...]` → temporarily disables sleep with `pmset disablesleep 1`, runs the command or waits until `Ctrl-C`, then restores the previous `SleepDisabled` value
+- `keepawake --status` → show whether `SleepDisabled` is currently enabled
+- `keepawake --on` / `keepawake --off` → manually toggle `SleepDisabled`
+- `keepawake --setup` → install a narrow sudoers rule for passwordless `pmset disablesleep`; optional, since the default behavior uses normal `sudo`
+
+Examples:
+
+```bash
+keepawake
+keepawake codex
+keepawake caffeinate -dimsu codex
+keepawake --status
+```
+
+By default, `keepawake` uses normal `sudo` and may ask for a password. After `keepawake --setup` has been run once on a machine, the same commands can toggle `pmset disablesleep` without prompting because `/etc/sudoers.d/pmset-sleep` grants only `/usr/bin/pmset disablesleep *`.
+
 Example worktree flow:
 
 ```bash
