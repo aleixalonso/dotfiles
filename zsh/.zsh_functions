@@ -435,3 +435,103 @@ gsd() {
     git stash drop "$stash"
   fi
 }
+
+_sleep_disabled_value() {
+  pmset -g 2>/dev/null |
+  awk '/^[[:space:]]*SleepDisabled[[:space:]]/ { print $2; found = 1 } END { if (!found) print "0" }'
+}
+
+_keepawake_status() {
+  local value
+
+  value="$(_sleep_disabled_value)"
+  case "$value" in
+    1) echo "SleepDisabled = 1 (sleep disabled)" ;;
+    0) echo "SleepDisabled = 0 (sleep enabled)" ;;
+    *) echo "SleepDisabled = unknown" ;;
+  esac
+}
+
+_keepawake_setup() {
+  local file="/etc/sudoers.d/pmset-sleep"
+  local temp
+  local rule
+
+  [[ -f "$file" ]] && return 0
+
+  temp="$(mktemp -t pmset-sleep)" || return 1
+  rule="$(whoami) ALL=(ALL) NOPASSWD: /usr/bin/pmset disablesleep *"
+  printf '%s\n' "$rule" > "$temp" || return 1
+
+  if ! visudo -cf "$temp" >/dev/null; then
+    rm -f "$temp"
+    echo "sudoers rule failed validation" >&2
+    return 1
+  fi
+
+  echo "installing sudoers rule for passwordless pmset disablesleep"
+  sudo install -o root -g wheel -m 0440 "$temp" "$file"
+  local install_status=$?
+  rm -f "$temp"
+  return "$install_status"
+}
+
+keepawake() {
+  local previous exit_status
+
+  case "${1:-}" in
+    --status)
+      if (( $# != 1 )); then
+        echo "usage: keepawake --status" >&2
+        return 1
+      fi
+      _keepawake_status
+      return
+      ;;
+    --on)
+      if (( $# != 1 )); then
+        echo "usage: keepawake --on" >&2
+        return 1
+      fi
+      _keepawake_setup || return 1
+      sudo pmset disablesleep 1 || return 1
+      _keepawake_status
+      return
+      ;;
+    --off)
+      if (( $# != 1 )); then
+        echo "usage: keepawake --off" >&2
+        return 1
+      fi
+      _keepawake_setup || return 1
+      sudo pmset disablesleep 0 || return 1
+      _keepawake_status
+      return
+      ;;
+    --help)
+      echo "usage: keepawake [--status|--on|--off|command ...]" >&2
+      return
+      ;;
+  esac
+
+  _keepawake_setup || return 1
+  previous="$(_sleep_disabled_value)"
+  sudo pmset disablesleep 1 || return 1
+  echo "lid-close sleep disabled; Ctrl-C to restore"
+
+  {
+    if (( $# > 0 )); then
+      "$@"
+    else
+      echo "keeping awake until Ctrl-C"
+      while true; do
+        sleep 3600
+      done
+    fi
+  } always {
+    exit_status=$?
+    sudo pmset disablesleep "$previous"
+    echo "SleepDisabled restored to $previous"
+    return "$exit_status"
+  }
+}
