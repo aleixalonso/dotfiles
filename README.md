@@ -24,6 +24,7 @@ Current repo contents:
 - `bin/repofmt` → `~/.local/bin/repofmt`
 - `git/.gitconfig` → `~/.gitconfig`
 - `git/.gitignore_global` → `~/.gitignore_global`
+- `codex/AGENTS.md` → `~/.codex/AGENTS.md`
 - `starship/starship.toml` → `~/.config/starship.toml`
 - `zellij/config.kdl` → `~/.config/zellij/config.kdl`
 - `ghostty/config` → `~/.config/ghostty/config`

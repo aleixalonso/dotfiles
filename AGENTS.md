@@ -23,6 +23,7 @@ The installer infers targets from repository paths. Preserve this convention whe
 - `Library/*` maps to `$HOME/Library/*`.
 - `ssh/*` maps to `$HOME/.ssh/*`.
 - `claude/*` maps to `$HOME/.claude/*`.
+- `codex/*` maps to `$HOME/.codex/*`.
 - Files named like `<dir>/<dir>.<ext>`, such as `starship/starship.toml`, map to `$HOME/.config/<dir>.<ext>`.
 - Other non-hidden nested files map under `$HOME/.config`.
 - `vscode/settings.json` is special-cased and linked to both VS Code and Cursor settings.
