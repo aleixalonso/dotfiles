@@ -201,6 +201,7 @@ Apply the tracked macOS preferences with:
 - Edit the files in this repo directly and rerun `./install.sh`
 - `bootstrap.sh` is the main entrypoint; it runs `install.sh` and can optionally run `macos.sh`
 - Zsh is split by responsibility: `.zshenv` for environment, `.zprofile` for login shell setup, `.zshrc` for interactive shell behavior
+- Standalone utilities live in `bin/` when they should be callable from any shell, script, editor task, or git hook; interactive shell helpers live in `zsh/.zsh_functions`, especially when they depend on zsh behavior or need to change the current shell state with `cd`
 - `~/.zshrc.local` is sourced at the end of `~/.zshrc` if it exists, which is useful for machine-local or company-specific shell functions you do not want to track here
 - Git uses `~/.gitignore_global` for personal global ignores; the repo's own `.gitignore` is only for this repository
 - You can run `repofmt` manually inside any git repo to detect Biome, Prettier, and ESLint from the repo and format changed files before staging
