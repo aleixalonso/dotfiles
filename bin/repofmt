@@ -245,7 +245,7 @@ main() {
   fi
 
   if prettier_cmd="$(find_cmd "node_modules/.bin/prettier" "prettier" 2>/dev/null)" && \
-    (has_any_file .prettierrc .prettierrc.json .prettierrc.yml .prettierrc.yaml .prettierrc.json5 .prettierrc.js .prettierrc.cjs .prettierrc.mjs prettier.config.js prettier.config.cjs prettier.config.mjs || package_json_has '"prettier"'); then
+    (has_any_file_in_repo .prettierrc .prettierrc.json .prettierrc.yml .prettierrc.yaml .prettierrc.json5 .prettierrc.js .prettierrc.cjs .prettierrc.mjs prettier.config.js prettier.config.cjs prettier.config.mjs || package_json_has_in_repo '"prettier"'); then
     if [[ ${#format_files[@]} -gt 0 ]]; then
       "$prettier_cmd" --write "${format_files[@]}"
       [[ "$staged_mode" -eq 1 ]] && restage_files "${format_files[@]}"
