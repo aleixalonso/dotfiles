@@ -18,15 +18,15 @@ Key entry points:
 
 The installer infers targets from repository paths. Preserve this convention when adding files:
 
-- Hidden files, such as `zsh/.zshrc`, map to `$HOME/.zshrc`.
+- Hidden files map to `$HOME`, such as `zsh/.zshrc` to `$HOME/.zshrc`.
+- Other non-hidden nested files map under `$HOME/.config`, such as `ghostty/config` to `$HOME/.config/ghostty/config`.
+- Files named like `<dir>/<dir>.<ext>`, such as `starship/starship.toml`, map to `$HOME/.config/<dir>.<ext>`.
 - `bin/*` maps to `$HOME/.local/bin/*`.
 - `Library/*` maps to `$HOME/Library/*`.
-- `ssh/*` maps to `$HOME/.ssh/*`.
-- `claude/*` maps to `$HOME/.claude/*`.
-- `codex/*` maps to `$HOME/.codex/*`.
-- Files named like `<dir>/<dir>.<ext>`, such as `starship/starship.toml`, map to `$HOME/.config/<dir>.<ext>`.
-- Other non-hidden nested files map under `$HOME/.config`.
+- `ssh/*`, `claude/*`, and `codex/*` map to hidden home directories: `$HOME/.ssh/*`, `$HOME/.claude/*`, and `$HOME/.codex/*`.
 - `vscode/settings.json` is special-cased and linked to both VS Code and Cursor settings.
+
+For a new top-level directory, use the generic `$HOME/.config/<dir>/...` mapping unless the target is a conventional home-level location such as `$HOME/Library`, `$HOME/.ssh`, or `$HOME/.local/bin`. In that case, add an explicit rule to `infer_target_path` and document it here.
 
 Do not add one-off symlink code unless the inferred mapping cannot express the target.
 
