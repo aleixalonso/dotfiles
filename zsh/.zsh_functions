@@ -177,6 +177,74 @@ gwl() {
   git worktree list
 }
 
+_gworktree_copy_env_files() {
+  local source_root="$1"
+  local target_root="$2"
+  local env_file target copied skipped
+  local -a env_files
+
+  copied=0
+  skipped=0
+  env_files=("$source_root"/.env(N.) "$source_root"/.env.*(N.))
+
+  for env_file in "${env_files[@]}"; do
+    case "$(basename "$env_file")" in
+      .env.example|.env.sample|.env.template)
+        continue
+        ;;
+    esac
+
+    target="$target_root/$(basename "$env_file")"
+    if [[ -e "$target" ]]; then
+      skipped=$((skipped + 1))
+      continue
+    fi
+
+    cp -p "$env_file" "$target" || return 1
+    copied=$((copied + 1))
+  done
+
+  if (( copied > 0 )); then
+    echo "copied $copied env file(s)"
+  fi
+  if (( skipped > 0 )); then
+    echo "skipped $skipped existing env file(s)"
+  fi
+}
+
+_gworktree_install_deps() {
+  local worktree_path="$1"
+  local manager
+  local -a install_args
+
+  [[ -f "$worktree_path/package.json" ]] || return 0
+
+  if [[ -f "$worktree_path/pnpm-lock.yaml" ]]; then
+    manager="pnpm"
+    install_args=(install)
+  elif [[ -f "$worktree_path/yarn.lock" ]]; then
+    manager="yarn"
+    install_args=(install)
+  elif [[ -f "$worktree_path/bun.lock" || -f "$worktree_path/bun.lockb" ]]; then
+    manager="bun"
+    install_args=(install)
+  elif [[ -f "$worktree_path/package-lock.json" || -f "$worktree_path/npm-shrinkwrap.json" ]]; then
+    manager="npm"
+    install_args=(install)
+  else
+    manager="npm"
+    install_args=(install)
+  fi
+
+  if ! command -v "$manager" >/dev/null 2>&1; then
+    echo "skipping dependency install: $manager is not available" >&2
+    return 0
+  fi
+
+  echo "installing dependencies with $manager"
+  (cd "$worktree_path" && "$manager" "${install_args[@]}")
+}
+
 _gworktree_list() {
   local exclude_current="${1:-0}"
   local exclude_primary="${2:-0}"
@@ -234,7 +302,7 @@ _gworktree_list() {
 gwnew() {
   local branch="$1"
   local base="${2:-main}"
-  local root repo parent worktree_path safe_branch existing_worktree
+  local root repo parent worktree_path safe_branch existing_worktree setup_status
 
   if [[ -z "$branch" ]]; then
     branch="$(_gbranch_pick "new worktree branch> ")" || return 1
@@ -273,8 +341,17 @@ gwnew() {
   else
     git fetch origin "$base" &&
     git worktree add -b "$branch" "$worktree_path" "origin/$base"
-  fi &&
-  cd "$worktree_path"
+  fi || return 1
+
+  _gworktree_copy_env_files "$root" "$worktree_path"
+  setup_status=$?
+  if (( setup_status == 0 )); then
+    _gworktree_install_deps "$worktree_path"
+    setup_status=$?
+  fi
+
+  cd "$worktree_path" || return 1
+  return "$setup_status"
 }
 
 gwgo() {

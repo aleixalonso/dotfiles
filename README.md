@@ -145,7 +145,7 @@ Git aliases live in `git/.gitconfig`; shell functions live in `zsh/.zsh_function
 #### Worktrees
 
 - `gwl` → list Git worktrees
-- `gwnew [branch] [base=main]` → create or jump to a sibling worktree for a branch; with no argument, pick a local branch interactively with `fzf`
+- `gwnew [branch] [base=main]` → create or jump to a sibling worktree for a branch; with no argument, pick a local branch interactively with `fzf`; new worktrees copy local `.env*` files and install Node dependencies when `package.json` is present
 - `gwgo [branch-or-path]` → jump to a worktree; with no argument, pick one interactively with `fzf`
 - `gwrm [path]` → remove a Git worktree; with no argument, pick one interactively with `fzf`
 
@@ -183,6 +183,7 @@ gwnew feature/login
 # enters a new ../current-repo-feature-login worktree
 # if feature/login exists, it uses that branch
 # otherwise it creates feature/login from origin/main
+# new worktrees copy local .env* files and run pnpm/yarn/bun/npm install based on lockfiles
 
 gwl
 gwgo
