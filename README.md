@@ -149,33 +149,6 @@ Git aliases live in `git/.gitconfig`; shell functions live in `zsh/.zsh_function
 - `gwgo [branch-or-path]` → jump to a worktree; with no argument, pick one interactively with `fzf`
 - `gwrm [path]` → remove a Git worktree; with no argument, pick one interactively with `fzf`
 
-#### Stash
-
-- `gsl` → list Git stashes
-- `gsm <message>` → stash tracked and untracked changes with a message
-- `gsa` → pick a stash with `fzf` and apply it
-- `gsp` → pick a stash with `fzf` and pop it
-- `gss` → pick a stash with `fzf` and show its patch
-- `gsd` → pick a stash with `fzf` and drop it after confirmation
-
-#### macOS sleep
-
-- `keepawake [command ...]` → temporarily disables sleep with `pmset disablesleep 1`, runs the command or waits until `Ctrl-C`, then restores the previous `SleepDisabled` value
-- `keepawake --status` → show whether `SleepDisabled` is currently enabled
-- `keepawake --on` / `keepawake --off` → manually toggle `SleepDisabled`
-- `keepawake --setup` → install a narrow sudoers rule for passwordless `pmset disablesleep`; optional, since the default behavior uses normal `sudo`
-
-Examples:
-
-```bash
-keepawake
-keepawake codex
-keepawake caffeinate -dimsu codex
-keepawake --status
-```
-
-By default, `keepawake` uses normal `sudo` and may ask for a password. After `keepawake --setup` has been run once on a machine, the same commands can toggle `pmset disablesleep` without prompting because `/etc/sudoers.d/pmset-sleep` grants only `/usr/bin/pmset disablesleep *`.
-
 Example worktree flow:
 
 ```bash
@@ -190,6 +163,40 @@ gwgo
 gwrm
 ```
 
+#### Stash
+
+- `gsl` → list Git stashes
+- `gsm <message>` → stash tracked and untracked changes with a message
+- `gsa` → pick a stash with `fzf` and apply it
+- `gsp` → pick a stash with `fzf` and pop it
+- `gss` → pick a stash with `fzf` and show its patch
+- `gsd` → pick a stash with `fzf` and drop it after confirmation
+
+## Shell utilities
+
+### macOS sleep
+
+- `keepawake [command ...]` → temporarily disables sleep with `pmset disablesleep 1`, runs the command or waits until `Ctrl-C`, then restores the previous `SleepDisabled` value
+- `keepawake --status` → show whether `SleepDisabled` is currently enabled
+- `keepawake --on` / `keepawake --off` → manually toggle `SleepDisabled`
+- `keepawake --setup` → allow passwordless `pmset disablesleep` toggles; optional, since the default behavior uses normal `sudo`
+
+Examples:
+
+```bash
+keepawake
+keepawake codex
+keepawake caffeinate -dimsu codex
+keepawake --status
+```
+
+### Repo formatting
+
+- `repofmt` → detect Biome, Prettier, and ESLint in the current Git repo and format changed files before staging
+- `repofmt path/to/file.ts` → format specific files instead of the repo's current modified and untracked files
+- `repofmt --staged` → format staged files and re-stage them, which is useful for repo-local Git hooks
+- `repofmt --all` → format all tracked files in the current repo
+
 ## macOS defaults
 
 Apply the tracked macOS preferences with:
@@ -203,13 +210,8 @@ Apply the tracked macOS preferences with:
 - Edit the files in this repo directly and rerun `./install.sh`
 - `bootstrap.sh` is the main entrypoint; it runs `install.sh` and can optionally run `macos.sh`
 - Zsh is split by responsibility: `.zshenv` for environment, `.zprofile` for login shell setup, `.zshrc` for interactive shell behavior
-- Standalone utilities live in `bin/` when they should be callable from any shell, script, editor task, or git hook; interactive shell helpers live in `zsh/.zsh_functions`, especially when they depend on zsh behavior or need to change the current shell state with `cd`
 - `~/.zshrc.local` is sourced at the end of `~/.zshrc` if it exists, which is useful for machine-local or company-specific shell functions you do not want to track here
 - Git uses `~/.gitignore_global` for personal global ignores; the repo's own `.gitignore` is only for this repository
-- You can run `repofmt` manually inside any git repo to detect Biome, Prettier, and ESLint from the repo and format changed files before staging
-- `repofmt path/to/file.ts` also works if you want to target specific files instead of the repo's current modified and untracked files
-- `repofmt --staged` formats staged files and re-stages them, which is useful if you want to wire it into a repo-local git hook
-- `repofmt --all` formats all tracked files in the current repo
 - Existing backups are preserved; repeated runs create numbered backups when needed
 - `install.sh` is tracked as executable, so `chmod +x install.sh` should not be needed after cloning
 
