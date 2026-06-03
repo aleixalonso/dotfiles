@@ -177,31 +177,93 @@ gwl() {
   git worktree list
 }
 
-_gworktree_copy_env_files() {
+_gworktree_setup_dirs() {
   local source_root="$1"
-  local target_root="$2"
-  local env_file target copied skipped
-  local -a env_files
+  local dir rel env_file has_env has_project_marker
+  local -a candidates env_files setup_dirs
 
-  copied=0
-  skipped=0
-  env_files=("$source_root"/.env(N.) "$source_root"/.env.*(N.))
+  candidates=("$source_root" "$source_root"/*(/N) "$source_root"/*/*(/N))
 
-  for env_file in "${env_files[@]}"; do
-    case "$(basename "$env_file")" in
-      .env.example|.env.sample|.env.template)
+  for dir in "${candidates[@]}"; do
+    rel="${dir#$source_root/}"
+    [[ "$dir" == "$source_root" ]] && rel="."
+
+    case "$rel" in
+      .git|.git/*|*/.git|*/.git/*|node_modules|node_modules/*|*/node_modules|*/node_modules/*)
         continue
         ;;
     esac
 
-    target="$target_root/$(basename "$env_file")"
-    if [[ -e "$target" ]]; then
-      skipped=$((skipped + 1))
-      continue
+    has_project_marker=0
+    if [[ -f "$dir/package.json" ||
+          -f "$dir/pnpm-lock.yaml" ||
+          -f "$dir/yarn.lock" ||
+          -f "$dir/bun.lock" ||
+          -f "$dir/bun.lockb" ||
+          -f "$dir/package-lock.json" ||
+          -f "$dir/npm-shrinkwrap.json" ]]; then
+      has_project_marker=1
     fi
 
-    cp -p "$env_file" "$target" || return 1
-    copied=$((copied + 1))
+    has_env=0
+    env_files=("$dir"/.env(N.) "$dir"/.env.*(N.))
+    for env_file in "${env_files[@]}"; do
+      case "$(basename "$env_file")" in
+        .env.example|.env.sample|.env.template)
+          continue
+          ;;
+      esac
+      has_env=1
+      break
+    done
+
+    if (( has_project_marker || has_env )); then
+      setup_dirs+=("$rel")
+    fi
+  done
+
+  printf '%s\n' "${setup_dirs[@]}"
+}
+
+_gworktree_copy_env_files() {
+  local source_root="$1"
+  local target_root="$2"
+  shift 2
+  local setup_dir source_dir target_dir env_file target copied skipped
+  local -a env_files setup_dirs
+
+  copied=0
+  skipped=0
+  setup_dirs=("$@")
+
+  for setup_dir in "${setup_dirs[@]}"; do
+    if [[ "$setup_dir" == "." ]]; then
+      source_dir="$source_root"
+      target_dir="$target_root"
+    else
+      source_dir="$source_root/$setup_dir"
+      target_dir="$target_root/$setup_dir"
+    fi
+
+    [[ -d "$target_dir" ]] || continue
+
+    env_files=("$source_dir"/.env(N.) "$source_dir"/.env.*(N.))
+    for env_file in "${env_files[@]}"; do
+      case "$(basename "$env_file")" in
+        .env.example|.env.sample|.env.template)
+          continue
+          ;;
+      esac
+
+      target="$target_dir/$(basename "$env_file")"
+      if [[ -e "$target" ]]; then
+        skipped=$((skipped + 1))
+        continue
+      fi
+
+      cp -p "$env_file" "$target" || return 1
+      copied=$((copied + 1))
+    done
   done
 
   if (( copied > 0 )); then
@@ -214,35 +276,47 @@ _gworktree_copy_env_files() {
 
 _gworktree_install_deps() {
   local worktree_path="$1"
-  local manager
+  shift
+  local setup_dir install_dir manager
+  local -a setup_dirs
   local -a install_args
 
-  [[ -f "$worktree_path/package.json" ]] || return 0
+  setup_dirs=("$@")
 
-  if [[ -f "$worktree_path/pnpm-lock.yaml" ]]; then
-    manager="pnpm"
-    install_args=(install)
-  elif [[ -f "$worktree_path/yarn.lock" ]]; then
-    manager="yarn"
-    install_args=(install)
-  elif [[ -f "$worktree_path/bun.lock" || -f "$worktree_path/bun.lockb" ]]; then
-    manager="bun"
-    install_args=(install)
-  elif [[ -f "$worktree_path/package-lock.json" || -f "$worktree_path/npm-shrinkwrap.json" ]]; then
-    manager="npm"
-    install_args=(install)
-  else
-    manager="npm"
-    install_args=(install)
-  fi
+  for setup_dir in "${setup_dirs[@]}"; do
+    if [[ "$setup_dir" == "." ]]; then
+      install_dir="$worktree_path"
+    else
+      install_dir="$worktree_path/$setup_dir"
+    fi
 
-  if ! command -v "$manager" >/dev/null 2>&1; then
-    echo "skipping dependency install: $manager is not available" >&2
-    return 0
-  fi
+    [[ -f "$install_dir/package.json" ]] || continue
 
-  echo "installing dependencies with $manager"
-  (cd "$worktree_path" && "$manager" "${install_args[@]}")
+    if [[ -f "$install_dir/pnpm-lock.yaml" ]]; then
+      manager="pnpm"
+      install_args=(install)
+    elif [[ -f "$install_dir/yarn.lock" ]]; then
+      manager="yarn"
+      install_args=(install)
+    elif [[ -f "$install_dir/bun.lock" || -f "$install_dir/bun.lockb" ]]; then
+      manager="bun"
+      install_args=(install)
+    elif [[ -f "$install_dir/package-lock.json" || -f "$install_dir/npm-shrinkwrap.json" ]]; then
+      manager="npm"
+      install_args=(install)
+    else
+      manager="npm"
+      install_args=(install)
+    fi
+
+    if ! command -v "$manager" >/dev/null 2>&1; then
+      echo "skipping dependency install in $setup_dir: $manager is not available" >&2
+      continue
+    fi
+
+    echo "installing dependencies in $setup_dir with $manager"
+    (cd "$install_dir" && "$manager" "${install_args[@]}") || return 1
+  done
 }
 
 _gworktree_list() {
@@ -302,7 +376,9 @@ _gworktree_list() {
 gwnew() {
   local branch="$1"
   local base="${2:-main}"
-  local root repo parent worktree_path safe_branch existing_worktree setup_status
+  local root repo parent worktree_path safe_branch existing_worktree setup_status setup_dirs_output setup_dir
+  local -a setup_dirs
+  local -A seen_setup_dirs
 
   if [[ -z "$branch" ]]; then
     branch="$(_gbranch_pick "new worktree branch> ")" || return 1
@@ -343,10 +419,20 @@ gwnew() {
     git worktree add -b "$branch" "$worktree_path" "origin/$base"
   fi || return 1
 
-  _gworktree_copy_env_files "$root" "$worktree_path"
+  setup_dirs_output="$(
+    _gworktree_setup_dirs "$root"
+    _gworktree_setup_dirs "$worktree_path"
+  )"
+  for setup_dir in "${(@f)setup_dirs_output}"; do
+    [[ -n "$setup_dir" && -z "${seen_setup_dirs[$setup_dir]}" ]] || continue
+    seen_setup_dirs[$setup_dir]=1
+    setup_dirs+=("$setup_dir")
+  done
+
+  _gworktree_copy_env_files "$root" "$worktree_path" "${setup_dirs[@]}"
   setup_status=$?
   if (( setup_status == 0 )); then
-    _gworktree_install_deps "$worktree_path"
+    _gworktree_install_deps "$worktree_path" "${setup_dirs[@]}"
     setup_status=$?
   fi
 
