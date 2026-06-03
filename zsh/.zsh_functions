@@ -305,8 +305,8 @@ _gworktree_install_deps() {
       manager="npm"
       install_args=(install)
     else
-      manager="npm"
-      install_args=(install)
+      echo "skipping dependency install in $setup_dir: no lockfile found" >&2
+      continue
     fi
 
     if ! command -v "$manager" >/dev/null 2>&1; then
