@@ -376,7 +376,7 @@ _gworktree_list() {
 gwnew() {
   local branch="$1"
   local base="${2:-main}"
-  local root repo parent worktree_path safe_branch existing_worktree setup_status setup_dirs_output setup_dir
+  local root primary_root repo parent worktree_path safe_branch existing_worktree setup_status setup_dirs_output setup_dir
   local -a setup_dirs
   local -A seen_setup_dirs
 
@@ -385,8 +385,12 @@ gwnew() {
   fi
 
   root="$(git rev-parse --show-toplevel)" || return 1
-  repo="$(basename "$root")"
-  parent="$(dirname "$root")"
+  primary_root="$(
+    git worktree list --porcelain |
+    awk '/^worktree / { print substr($0, 10); exit }'
+  )" || return 1
+  repo="$(basename "$primary_root")"
+  parent="$(dirname "$primary_root")"
   safe_branch="${branch//\//-}"
   worktree_path="$parent/$repo-$safe_branch"
   existing_worktree="$(
