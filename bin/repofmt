@@ -82,15 +82,17 @@ has_any_file_in_repo() {
   return 1
 }
 
-find_nearest_eslint_config_dir() {
+find_nearest_eslint_config() {
   local path="$1"
   local dir
   local config
-  local configs=(
+  local flat_configs=(
     eslint.config.js
     eslint.config.cjs
     eslint.config.mjs
     eslint.config.ts
+  )
+  local legacy_configs=(
     .eslintrc
     .eslintrc.js
     .eslintrc.cjs
@@ -106,7 +108,14 @@ find_nearest_eslint_config_dir() {
   fi
 
   while :; do
-    for config in "${configs[@]}"; do
+    for config in "${flat_configs[@]}"; do
+      if [[ -f "$dir/$config" ]]; then
+        printf '%s\n' "$dir/$config"
+        return 0
+      fi
+    done
+
+    for config in "${legacy_configs[@]}"; do
       if [[ -f "$dir/$config" ]]; then
         printf '%s\n' "$dir"
         return 0
@@ -129,40 +138,44 @@ format_with_eslint() {
   local staged_mode="$2"
   shift 2
 
-  local config_dirs=()
-  local config_dir
+  local config_targets=()
+  local config_target
   local path
   local group_files=()
-  local dir_seen
-  local existing_dir
+  local target_seen
+  local existing_target
 
   for path in "$@"; do
-    config_dir="$(find_nearest_eslint_config_dir "$path")"
-    dir_seen=0
+    config_target="$(find_nearest_eslint_config "$path")"
+    target_seen=0
 
-    for existing_dir in "${config_dirs[@]}"; do
-      if [[ "$existing_dir" == "$config_dir" ]]; then
-        dir_seen=1
+    for existing_target in "${config_targets[@]}"; do
+      if [[ "$existing_target" == "$config_target" ]]; then
+        target_seen=1
         break
       fi
     done
 
-    if [[ "$dir_seen" -eq 0 ]]; then
-      config_dirs+=("$config_dir")
+    if [[ "$target_seen" -eq 0 ]]; then
+      config_targets+=("$config_target")
     fi
   done
 
-  for config_dir in "${config_dirs[@]}"; do
+  for config_target in "${config_targets[@]}"; do
     group_files=()
 
     for path in "$@"; do
-      if [[ "$(find_nearest_eslint_config_dir "$path")" == "$config_dir" ]]; then
+      if [[ "$(find_nearest_eslint_config "$path")" == "$config_target" ]]; then
         group_files+=("$PWD/$path")
       fi
     done
 
     if [[ ${#group_files[@]} -gt 0 ]]; then
-      (cd "$config_dir" && "$eslint_cmd" --fix "${group_files[@]}")
+      if [[ "$config_target" == *eslint.config.* ]]; then
+        "$eslint_cmd" --config "$PWD/$config_target" --fix "${group_files[@]}"
+      else
+        (cd "$config_target" && "$eslint_cmd" --fix "${group_files[@]}")
+      fi
       [[ "$staged_mode" -eq 1 ]] && restage_files "${group_files[@]}"
     fi
   done
