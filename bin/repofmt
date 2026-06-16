@@ -26,7 +26,7 @@ find_cmd() {
   local global_name="$2"
 
   if [[ -x "$local_path" ]]; then
-    printf '%s\n' "$local_path"
+    printf '%s/%s\n' "$PWD" "$local_path"
     return 0
   fi
 
@@ -80,6 +80,92 @@ has_any_file_in_repo() {
   done
 
   return 1
+}
+
+find_nearest_eslint_config_dir() {
+  local path="$1"
+  local dir
+  local config
+  local configs=(
+    eslint.config.js
+    eslint.config.cjs
+    eslint.config.mjs
+    eslint.config.ts
+    .eslintrc
+    .eslintrc.js
+    .eslintrc.cjs
+    .eslintrc.json
+    .eslintrc.yml
+    .eslintrc.yaml
+  )
+
+  if [[ "$path" == */* ]]; then
+    dir="${path%/*}"
+  else
+    dir="."
+  fi
+
+  while :; do
+    for config in "${configs[@]}"; do
+      if [[ -f "$dir/$config" ]]; then
+        printf '%s\n' "$dir"
+        return 0
+      fi
+    done
+
+    if [[ "$dir" == "." ]]; then
+      break
+    fi
+
+    dir="${dir%/*}"
+    [[ "$dir" == "$path" || -z "$dir" ]] && dir="."
+  done
+
+  printf '%s\n' "."
+}
+
+format_with_eslint() {
+  local eslint_cmd="$1"
+  local staged_mode="$2"
+  shift 2
+
+  local config_dirs=()
+  local config_dir
+  local path
+  local group_files=()
+  local dir_seen
+  local existing_dir
+
+  for path in "$@"; do
+    config_dir="$(find_nearest_eslint_config_dir "$path")"
+    dir_seen=0
+
+    for existing_dir in "${config_dirs[@]}"; do
+      if [[ "$existing_dir" == "$config_dir" ]]; then
+        dir_seen=1
+        break
+      fi
+    done
+
+    if [[ "$dir_seen" -eq 0 ]]; then
+      config_dirs+=("$config_dir")
+    fi
+  done
+
+  for config_dir in "${config_dirs[@]}"; do
+    group_files=()
+
+    for path in "$@"; do
+      if [[ "$(find_nearest_eslint_config_dir "$path")" == "$config_dir" ]]; then
+        group_files+=("$PWD/$path")
+      fi
+    done
+
+    if [[ ${#group_files[@]} -gt 0 ]]; then
+      (cd "$config_dir" && "$eslint_cmd" --fix "${group_files[@]}")
+      [[ "$staged_mode" -eq 1 ]] && restage_files "${group_files[@]}"
+    fi
+  done
 }
 
 collect_default_files() {
@@ -256,8 +342,7 @@ main() {
   if eslint_cmd="$(find_cmd "node_modules/.bin/eslint" "eslint" 2>/dev/null)" && \
     (has_any_file_in_repo eslint.config.js eslint.config.cjs eslint.config.mjs eslint.config.ts .eslintrc .eslintrc.js .eslintrc.cjs .eslintrc.json .eslintrc.yml .eslintrc.yaml || package_json_has_in_repo '"eslintConfig"' || package_json_has_in_repo '"eslint"'); then
     if [[ ${#js_files[@]} -gt 0 ]]; then
-      "$eslint_cmd" --fix "${js_files[@]}"
-      [[ "$staged_mode" -eq 1 ]] && restage_files "${js_files[@]}"
+      format_with_eslint "$eslint_cmd" "$staged_mode" "${js_files[@]}"
       ran_tool=1
     fi
   fi

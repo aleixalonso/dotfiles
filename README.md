@@ -196,6 +196,7 @@ keepawake --status
 - `repofmt path/to/file.ts` → format specific files instead of the repo's current modified and untracked files
 - `repofmt --staged` → format staged files and re-stage them, which is useful for repo-local Git hooks
 - `repofmt --all` → format all tracked files in the current repo
+- ESLint runs files from their nearest config directory, which supports monorepos with package-level ESLint configs.
 
 ## macOS defaults
 
