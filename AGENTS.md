@@ -24,13 +24,14 @@ The installer infers targets from repository paths. Preserve this convention whe
 - `bin/*` maps to `$HOME/.local/bin/*`.
 - `Library/*` maps to `$HOME/Library/*`.
 - `ssh/*`, `claude/*`, and `codex/*` map to hidden home directories: `$HOME/.ssh/*`, `$HOME/.claude/*`, and `$HOME/.codex/*`.
+- `agents/skills` is linked as a directory to both `$HOME/.agents/skills` and `$HOME/.claude/skills`.
 - `vscode/settings.json` is special-cased and linked to both VS Code and Cursor settings.
 
 For a new top-level directory, use the generic `$HOME/.config/<dir>/...` mapping unless the target is a conventional home-level location such as `$HOME/Library`, `$HOME/.ssh`, or `$HOME/.local/bin`. In that case, add an explicit rule to `infer_target_path` and document it here.
 
 Do not add one-off symlink code unless the inferred mapping cannot express the target.
 
-If a top-level directory needs special handling, update `should_skip_top_level` in `install.sh` so the generic linker does not also process it. `vscode/` is skipped for this reason because `link_editor_settings` links it to both VS Code and Cursor.
+If a top-level directory needs special handling, update `should_skip_top_level` in `install.sh` so the generic linker does not also process it. `agents/` and `vscode/` are skipped for this reason because dedicated functions link them to multiple targets.
 
 ## Shell Conventions
 

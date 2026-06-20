@@ -172,7 +172,7 @@ should_skip_top_level() {
   local name="$1"
 
   case "$name" in
-    .git|.github|vscode)
+    .git|.github|agents|vscode)
       return 0
       ;;
     *)
@@ -235,6 +235,17 @@ link_editor_settings() {
     "${HOME}/Library/Application Support/Cursor/User/settings.json"
 }
 
+link_agent_skills() {
+  local source="${DOTFILES_DIR}/agents/skills"
+
+  if [[ ! -d "$source" ]]; then
+    return
+  fi
+
+  link_file "$source" "${HOME}/.agents/skills"
+  link_file "$source" "${HOME}/.claude/skills"
+}
+
 discover_sources() {
   local path
   local top_level
@@ -262,6 +273,7 @@ main() {
   install_brew_bundle
   setup_fnm
   link_editor_settings
+  link_agent_skills
 
   while IFS= read -r source; do
     target="$(infer_target_path "$source")"

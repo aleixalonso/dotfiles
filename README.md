@@ -65,6 +65,7 @@ source ~/.zshrc
 - Installs the current Node.js LTS with `fnm` when no default is configured yet
 - Creates required directories automatically
 - Creates symlinks for the config files found in the repo
+- Links shared agent skills into both `~/.agents/skills` and `~/.claude/skills`
 - Links `vscode/settings.json` into both VS Code and Cursor
 - Installs executables from `bin/` into `~/.local/bin`
 - Replaces incorrect symlinks safely
