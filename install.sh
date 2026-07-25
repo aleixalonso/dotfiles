@@ -168,6 +168,50 @@ setup_fnm() {
   success "Configured fnm with the current LTS Node.js release"
 }
 
+install_claude_caveman() {
+  if ! command -v claude >/dev/null 2>&1; then
+    warn "Skipping Claude Caveman plugin install because claude is not on PATH"
+    return
+  fi
+
+  log "Installing Claude Caveman plugin"
+
+  if ! claude plugin marketplace add JuliusBrussee/caveman; then
+    warn "Could not add Claude Caveman marketplace; it may already be configured"
+  fi
+
+  if claude plugin install caveman@caveman; then
+    success "Installed Claude Caveman plugin"
+  else
+    warn "Could not install Claude Caveman plugin; it may already be installed"
+  fi
+}
+
+install_codex_caveman() {
+  if ! command -v codex >/dev/null 2>&1; then
+    warn "Skipping Codex Caveman skill install because codex is not on PATH"
+    return
+  fi
+
+  if ! command -v npx >/dev/null 2>&1; then
+    warn "Skipping Codex Caveman skill install because npx is not on PATH"
+    return
+  fi
+
+  log "Installing Codex Caveman skills"
+
+  if npx -y skills add JuliusBrussee/caveman --skill '*' -a codex --yes; then
+    success "Installed Codex Caveman skills"
+  else
+    warn "Could not install Codex Caveman skills"
+  fi
+}
+
+install_agent_integrations() {
+  install_claude_caveman
+  install_codex_caveman
+}
+
 should_skip_top_level() {
   local name="$1"
 
@@ -237,6 +281,7 @@ link_editor_settings() {
 
 link_agent_skills() {
   local source="${DOTFILES_DIR}/agents/skills"
+  local skill_dir
 
   if [[ ! -d "$source" ]]; then
     return
@@ -244,6 +289,12 @@ link_agent_skills() {
 
   link_file "$source" "${HOME}/.agents/skills"
   link_file "$source" "${HOME}/.claude/skills"
+
+  ensure_dir "${HOME}/.codex/skills"
+
+  while IFS= read -r skill_dir; do
+    link_file "$skill_dir" "${HOME}/.codex/skills/$(basename "$skill_dir")"
+  done < <(find "$source" -mindepth 1 -maxdepth 1 -type d | sort)
 }
 
 discover_sources() {
@@ -272,6 +323,7 @@ main() {
   ensure_dir "$CONFIG_DIR"
   install_brew_bundle
   setup_fnm
+  install_agent_integrations
   link_editor_settings
   link_agent_skills
 

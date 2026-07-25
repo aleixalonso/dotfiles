@@ -25,6 +25,11 @@ Current repo contents:
 - `git/.gitconfig` → `~/.gitconfig`
 - `git/.gitignore_global` → `~/.gitignore_global`
 - `codex/AGENTS.md` → `~/.codex/AGENTS.md`
+- `codex/RTK.md` → `~/.codex/RTK.md`
+- `claude/CLAUDE.md` → `~/.claude/CLAUDE.md`
+- `claude/RTK.md` → `~/.claude/RTK.md`
+- `claude/settings.json` → `~/.claude/settings.json`
+- `claude/statusline-command.sh` → `~/.claude/statusline-command.sh`
 - `starship/starship.toml` → `~/.config/starship.toml`
 - `zellij/config.kdl` → `~/.config/zellij/config.kdl`
 - `ghostty/config` → `~/.config/ghostty/config`
@@ -63,14 +68,23 @@ source ~/.zshrc
 - Installs Homebrew if it is missing
 - Installs Homebrew packages declared in `Brewfile`
 - Installs the current Node.js LTS with `fnm` when no default is configured yet
+- Installs agent integrations for RTK and Caveman when the required CLIs are available
 - Creates required directories automatically
 - Creates symlinks for the config files found in the repo
-- Links shared agent skills into both `~/.agents/skills` and `~/.claude/skills`
+- Links shared agent skills into `~/.agents/skills`, `~/.claude/skills`, and `~/.codex/skills`
 - Links `vscode/settings.json` into both VS Code and Cursor
 - Installs executables from `bin/` into `~/.local/bin`
 - Replaces incorrect symlinks safely
 - Backs up existing real files using a `.backup` suffix
 - Can be run multiple times safely
+
+## Agent integrations
+
+- RTK instructions are linked into both `~/.codex/RTK.md` and `~/.claude/RTK.md`
+- RTK is installed through Homebrew from `Brewfile`
+- Claude uses `rtk hook claude` through `claude/settings.json`
+- Claude Caveman is installed with `claude plugin marketplace add JuliusBrussee/caveman` and `claude plugin install caveman@caveman`
+- Codex Caveman is installed with `npx -y skills add JuliusBrussee/caveman --skill '*' -a codex --yes`
 
 ## Bootstrap
 
@@ -96,6 +110,7 @@ The current `Brewfile` includes the packages already used by this repo:
 - `zsh-syntax-highlighting`
 - `fzf`
 - `fnm`
+- `rtk`
 - `ghostty`
 - `font-jetbrains-mono-nerd-font`
 

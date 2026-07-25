@@ -25,6 +25,7 @@ The installer infers targets from repository paths. Preserve this convention whe
 - `Library/*` maps to `$HOME/Library/*`.
 - `ssh/*`, `claude/*`, and `codex/*` map to hidden home directories: `$HOME/.ssh/*`, `$HOME/.claude/*`, and `$HOME/.codex/*`.
 - `agents/skills` is linked as a directory to both `$HOME/.agents/skills` and `$HOME/.claude/skills`.
+- Each direct child of `agents/skills` is linked individually into `$HOME/.codex/skills` so Codex system skills under `$HOME/.codex/skills/.system` are preserved.
 - `vscode/settings.json` is special-cased and linked to both VS Code and Cursor settings.
 
 For a new top-level directory, use the generic `$HOME/.config/<dir>/...` mapping unless the target is a conventional home-level location such as `$HOME/Library`, `$HOME/.ssh`, or `$HOME/.local/bin`. In that case, add an explicit rule to `infer_target_path` and document it here.
