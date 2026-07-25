@@ -84,7 +84,7 @@ source ~/.zshrc
 - RTK is installed through Homebrew from `Brewfile`
 - Claude uses `rtk hook claude` through `claude/settings.json`
 - Claude Caveman is installed with `claude plugin marketplace add JuliusBrussee/caveman` and `claude plugin install caveman@caveman`
-- Codex Caveman is installed with `npx -y skills add JuliusBrussee/caveman --skill '*' -a codex --yes`
+- Codex Caveman is installed globally with `npx -y skills add JuliusBrussee/caveman --skill '*' -a codex --yes -g`
 
 ## Bootstrap
 

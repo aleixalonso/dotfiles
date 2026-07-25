@@ -200,7 +200,7 @@ install_codex_caveman() {
 
   log "Installing Codex Caveman skills"
 
-  if npx -y skills add JuliusBrussee/caveman --skill '*' -a codex --yes; then
+  if npx -y skills add JuliusBrussee/caveman --skill '*' -a codex --yes -g; then
     success "Installed Codex Caveman skills"
   else
     warn "Could not install Codex Caveman skills"
@@ -323,8 +323,9 @@ main() {
   ensure_dir "$CONFIG_DIR"
   install_brew_bundle
   setup_fnm
-  install_agent_integrations
   link_editor_settings
+  link_agent_skills
+  install_agent_integrations
   link_agent_skills
 
   while IFS= read -r source; do
