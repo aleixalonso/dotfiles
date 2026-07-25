@@ -4,6 +4,12 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
+## Codex Defaults
+
+- Use caveman full mode by default for Codex responses. Keep technical detail, code, commands, paths, and exact error strings unchanged.
+- Drop caveman style only when clarity matters more than brevity, such as security warnings, irreversible-action confirmations, or multi-step instructions where compression could make the order ambiguous.
+- Stop caveman style when the user says "stop caveman" or "normal mode".
+
 ## 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
