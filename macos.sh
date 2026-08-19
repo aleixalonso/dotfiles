@@ -18,6 +18,10 @@ defaults write com.apple.dock show-recents -bool false
 # Enable tap to click on the trackpad.
 defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
 
+# Enable right-side secondary click and Smart Zoom on Magic Mouse.
+defaults write com.apple.AppleMultitouchMouse MouseButtonMode -string "TwoButton"
+defaults write com.apple.AppleMultitouchMouse MouseOneFingerDoubleTapGesture -int 1
+
 # Set bottom-left hot corner to Quick Note.
 defaults write com.apple.dock wvous-bl-corner -int 14
 defaults write com.apple.dock wvous-bl-modifier -int 0
