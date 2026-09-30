@@ -157,6 +157,7 @@ Git aliases live in `git/.gitconfig`; shell functions live in `zsh/.zsh_function
 - `gbdesc [branch=current]` → edit a local branch description
 - `gup <branch>` → switch to a branch and update it with `git up`
 - `grebase [-i] <branch>` → update the target branch, switch back, then rebase the current branch onto it
+- `gmerge <branch>` → update the target branch, switch back, then merge it into the current branch
 
 #### Worktrees
 

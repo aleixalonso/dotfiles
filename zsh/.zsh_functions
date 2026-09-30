@@ -173,6 +173,29 @@ grebase() {
   echo "Rebase finished. If this branch was previously pushed, use: git push --force-with-lease"
 }
 
+gmerge() {
+  local target current
+  target="$1"
+
+  if [[ -z "$target" ]]; then
+    echo "usage: gmerge <branch>" >&2
+    return 1
+  fi
+
+  current="$(git branch --show-current)" || return 1
+
+  if [[ "$current" == "$target" ]]; then
+    echo "already on $target" >&2
+    return 1
+  fi
+
+  git switch "$target" &&
+  git up &&
+  git switch "$current" &&
+  git merge "$target" &&
+  echo "Merge finished."
+}
+
 gwl() {
   git worktree list
 }
