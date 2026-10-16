@@ -12,6 +12,13 @@ used=$(echo "$input" | jq -r '
 
 [ -z "$model" ] && exit 0
 
+effort=$(echo "$input" | jq -r '.effort.level // empty')
+[ -n "$effort" ] && model="$model · $effort"
+
+cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // empty')
+branch=$([ -n "$cwd" ] && git -c optional-locks -C "$cwd" branch --show-current 2>/dev/null)
+[ -n "$branch" ] && model="$model · $branch"
+
 h() {
   echo "$1" | awk '{
     if ($1 >= 1000000) { v=$1/1000000; u="m" }
