@@ -297,6 +297,83 @@ link_agent_skills() {
   done < <(find "$source" -mindepth 1 -maxdepth 1 -type d | sort)
 }
 
+codex_status_line_value() {
+  awk '
+    /^\[tui\]/ { in_tui = 1; next }
+    /^\[/ { in_tui = 0 }
+    in_tui && $0 ~ /^[[:space:]]*status_line[[:space:]]*=/ {
+      line = $0
+      sub(/^[[:space:]]*status_line[[:space:]]*=[[:space:]]*/, "", line)
+      print line
+      exit
+    }
+  ' "$1"
+}
+
+merge_codex_config() {
+  local source="${DOTFILES_DIR}/codex/config.toml"
+  local target="${HOME}/.codex/config.toml"
+  local value
+  local updated
+  local backup
+
+  if [[ ! -f "$source" ]]; then
+    return
+  fi
+
+  value="$(codex_status_line_value "$source")"
+
+  if [[ -z "$value" ]]; then
+    return
+  fi
+
+  ensure_dir "$(dirname "$target")"
+
+  if [[ ! -f "$target" ]]; then
+    printf '[tui]\nstatus_line = %s\n' "$value" > "$target"
+    success "Created Codex config with tui.status_line"
+    return
+  fi
+
+  updated="$(awk -v value="$value" '
+    BEGIN { in_tui = 0; seen_tui = 0; wrote = 0 }
+    /^\[tui\]$/ { in_tui = 1; seen_tui = 1; print; next }
+    /^\[/ {
+      if (in_tui && !wrote) { print "status_line = " value; wrote = 1 }
+      in_tui = 0
+      print
+      next
+    }
+    {
+      if (in_tui && !wrote && $0 ~ /^[[:space:]]*status_line[[:space:]]*=/) {
+        print "status_line = " value
+        wrote = 1
+        next
+      }
+      print
+    }
+    END {
+      if (!seen_tui) {
+        print ""
+        print "[tui]"
+        print "status_line = " value
+      } else if (in_tui && !wrote) {
+        print "status_line = " value
+      }
+    }
+  ' "$target")"
+
+  if [[ "$updated" == "$(<"$target")" ]]; then
+    log "Codex tui.status_line already up to date"
+    return
+  fi
+
+  backup="$(backup_path_for "$target")"
+  cp "$target" "$backup"
+  printf '%s\n' "$updated" > "$target"
+  success "Merged Codex tui.status_line (backup: $backup)"
+}
+
 discover_sources() {
   local path
   local top_level
@@ -306,6 +383,10 @@ discover_sources() {
     top_level="${top_level%%/*}"
 
     if should_skip_top_level "$top_level"; then
+      continue
+    fi
+
+    if [[ "$top_level" == "codex" && "${path##*/}" == "config.toml" ]]; then
       continue
     fi
 
@@ -327,6 +408,7 @@ main() {
   link_agent_skills
   install_agent_integrations
   link_agent_skills
+  merge_codex_config
 
   while IFS= read -r source; do
     target="$(infer_target_path "$source")"
