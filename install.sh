@@ -297,81 +297,140 @@ link_agent_skills() {
   done < <(find "$source" -mindepth 1 -maxdepth 1 -type d | sort)
 }
 
-codex_status_line_value() {
-  awk '
-    /^\[tui\]/ { in_tui = 1; next }
-    /^\[/ { in_tui = 0 }
-    in_tui && $0 ~ /^[[:space:]]*status_line[[:space:]]*=/ {
-      line = $0
-      sub(/^[[:space:]]*status_line[[:space:]]*=[[:space:]]*/, "", line)
-      print line
-      exit
-    }
-  ' "$1"
-}
-
 merge_codex_config() {
   local source="${DOTFILES_DIR}/codex/config.toml"
   local target="${HOME}/.codex/config.toml"
-  local value
-  local updated
-  local backup
+  local tmp
+  local backup=""
 
   if [[ ! -f "$source" ]]; then
     return
   fi
 
-  value="$(codex_status_line_value "$source")"
-
-  if [[ -z "$value" ]]; then
+  if ! python3 -c 'import tomllib' >/dev/null 2>&1; then
+    warn "Skipping Codex config merge: python3 with tomllib (>=3.11) not found"
     return
   fi
 
   ensure_dir "$(dirname "$target")"
 
-  if [[ ! -f "$target" ]]; then
-    printf '[tui]\nstatus_line = %s\n' "$value" > "$target"
-    success "Created Codex config with tui.status_line"
+  tmp="$(mktemp)"
+
+  if ! python3 - "$source" "$target" > "$tmp" <<'PY'
+import sys
+import tomllib
+from datetime import date, datetime, time
+
+BARE_KEY = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")
+
+
+def key(name):
+    if name and all(char in BARE_KEY for char in name):
+        return name
+    return '"' + name.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def scalar(value):
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, str):
+        return (
+            '"'
+            + value.replace("\\", "\\\\")
+            .replace('"', '\\"')
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t")
+            + '"'
+        )
+    if isinstance(value, (int, float)):
+        return repr(value)
+    if isinstance(value, (datetime, date, time)):
+        return value.isoformat()
+    if isinstance(value, list):
+        return "[" + ", ".join(scalar(item) for item in value) + "]"
+    raise TypeError(f"unsupported value: {value!r}")
+
+
+def emit(table, path, lines):
+    scalars = {}
+    subtables = {}
+    array_tables = {}
+    for name, value in table.items():
+        if isinstance(value, dict):
+            subtables[name] = value
+        elif isinstance(value, list) and value and all(isinstance(item, dict) for item in value):
+            array_tables[name] = value
+        else:
+            scalars[name] = value
+    for name, value in scalars.items():
+        lines.append(f"{key(name)} = {scalar(value)}")
+    for name, value in subtables.items():
+        sub = path + [name]
+        lines.append("")
+        lines.append("[" + ".".join(key(part) for part in sub) + "]")
+        emit(value, sub, lines)
+    for name, value in array_tables.items():
+        sub = path + [name]
+        for item in value:
+            lines.append("")
+            lines.append("[[" + ".".join(key(part) for part in sub) + "]]")
+            emit(item, sub, lines)
+
+
+def dumps(data):
+    lines = []
+    emit(data, [], lines)
+    return "\n".join(lines) + "\n"
+
+
+def deep_merge(base, overlay):
+    for name, value in overlay.items():
+        if isinstance(value, dict) and isinstance(base.get(name), dict):
+            deep_merge(base[name], value)
+        else:
+            base[name] = value
+    return base
+
+
+base_path, target_path = sys.argv[1], sys.argv[2]
+
+with open(base_path, "rb") as handle:
+    overlay = tomllib.load(handle)
+
+try:
+    with open(target_path, "rb") as handle:
+        base = tomllib.load(handle)
+except FileNotFoundError:
+    base = {}
+
+merged = deep_merge(base, overlay)
+rendered = dumps(merged)
+
+if tomllib.loads(rendered) != merged:
+    sys.exit(3)
+
+sys.stdout.write(rendered)
+PY
+  then
+    rm -f "$tmp"
+    warn "Skipping Codex config merge: could not parse $target"
     return
   fi
 
-  updated="$(awk -v value="$value" '
-    BEGIN { in_tui = 0; seen_tui = 0; wrote = 0 }
-    /^\[tui\]$/ { in_tui = 1; seen_tui = 1; print; next }
-    /^\[/ {
-      if (in_tui && !wrote) { print "status_line = " value; wrote = 1 }
-      in_tui = 0
-      print
-      next
-    }
-    {
-      if (in_tui && !wrote && $0 ~ /^[[:space:]]*status_line[[:space:]]*=/) {
-        print "status_line = " value
-        wrote = 1
-        next
-      }
-      print
-    }
-    END {
-      if (!seen_tui) {
-        print ""
-        print "[tui]"
-        print "status_line = " value
-      } else if (in_tui && !wrote) {
-        print "status_line = " value
-      }
-    }
-  ' "$target")"
-
-  if [[ "$updated" == "$(<"$target")" ]]; then
-    log "Codex tui.status_line already up to date"
+  if [[ -f "$target" ]] && cmp -s "$tmp" "$target"; then
+    rm -f "$tmp"
+    log "Codex config already up to date"
     return
   fi
 
-  backup="$(backup_path_for "$target")"
-  cp "$target" "$backup"
-  printf '%s\n' "$updated" > "$target"
-  success "Merged Codex tui.status_line (backup: $backup)"
+  if [[ -f "$target" ]]; then
+    backup="$(backup_path_for "$target")"
+    cp "$target" "$backup"
+  fi
+
+  mv "$tmp" "$target"
+  success "Merged Codex config (backup: ${backup:-none})"
 }
 
 discover_sources() {

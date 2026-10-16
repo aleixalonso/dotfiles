@@ -26,7 +26,7 @@ Current repo contents:
 - `git/.gitignore_global` → `~/.gitignore_global`
 - `codex/AGENTS.md` → `~/.codex/AGENTS.md`
 - `codex/RTK.md` → `~/.codex/RTK.md`
-- `codex/config.toml` → portable keys merged into `~/.codex/config.toml` (not symlinked)
+- `codex/config.toml` → portable keys deep-merged into `~/.codex/config.toml` (not symlinked)
 - `claude/CLAUDE.md` → `~/.claude/CLAUDE.md`
 - `claude/RTK.md` → `~/.claude/RTK.md`
 - `claude/settings.json` → `~/.claude/settings.json`
@@ -74,7 +74,7 @@ source ~/.zshrc
 - Creates symlinks for the config files found in the repo
 - Links shared agent skills into `~/.agents/skills`, `~/.claude/skills`, and `~/.codex/skills`
 - Links `vscode/settings.json` into both VS Code and Cursor
-- Merges portable keys from `codex/config.toml` (such as `tui.status_line`) into `~/.codex/config.toml`, leaving machine-local settings and secrets untouched
+- Deep-merges every key from `codex/config.toml` (such as `tui.status_line`) into `~/.codex/config.toml`, leaving machine-local settings, secrets, and Codex's own writes untouched (requires `python3` >= 3.11 for `tomllib`; skipped with a warning otherwise)
 - Installs executables from `bin/` into `~/.local/bin`
 - Replaces incorrect symlinks safely
 - Backs up existing real files using a `.backup` suffix
