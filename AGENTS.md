@@ -77,3 +77,5 @@ There is no project-wide test suite. Use focused checks:
 ## Documentation
 
 Update `README.md` when behavior, install mapping, commands, or user-facing shortcuts change. Keep documentation direct and operational; this repo is for personal setup, not a marketing site.
+
+Keep `agents/skills/SOURCES.md` current when adding, removing, or updating vendored agent skills.

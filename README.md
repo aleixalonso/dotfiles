@@ -24,6 +24,7 @@ Current repo contents:
 - `bin/repofmt` → `~/.local/bin/repofmt`
 - `git/.gitconfig` → `~/.gitconfig`
 - `git/.gitignore_global` → `~/.gitignore_global`
+- `agents/skills/` → shared agent skills linked into `~/.agents/skills`, `~/.claude/skills`, and `~/.codex/skills`; upstream sources tracked in `agents/skills/SOURCES.md`
 - `codex/AGENTS.md` → `~/.codex/AGENTS.md`
 - `codex/RTK.md` → `~/.codex/RTK.md`
 - `codex/config.toml` → portable keys deep-merged into `~/.codex/config.toml` (not symlinked)
