@@ -69,7 +69,7 @@ source ~/.zshrc
 - Installs Homebrew if it is missing
 - Installs Homebrew packages declared in `Brewfile` without upgrading already-installed packages
 - Installs the current Node.js LTS with `fnm` when no default is configured yet
-- Installs agent integrations for RTK and Caveman when the required CLIs are available
+- Installs RTK integration when the required CLIs are available
 - Creates required directories automatically
 - Creates symlinks for the config files found in the repo
 - Links shared agent skills into `~/.agents/skills`, `~/.claude/skills`, and `~/.codex/skills`
@@ -85,8 +85,6 @@ source ~/.zshrc
 - RTK instructions are linked into both `~/.codex/RTK.md` and `~/.claude/RTK.md`
 - RTK is installed through Homebrew from `Brewfile`
 - Claude uses `rtk hook claude` through `claude/settings.json`
-- Claude Caveman is installed with `claude plugin marketplace add JuliusBrussee/caveman` and `claude plugin install caveman@caveman`
-- Codex Caveman is installed globally with `npx -y skills add JuliusBrussee/caveman --skill '*' -a codex --yes -g`
 
 ## Bootstrap
 
