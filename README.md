@@ -67,7 +67,7 @@ source ~/.zshrc
 ## What `install.sh` does
 
 - Installs Homebrew if it is missing
-- Installs Homebrew packages declared in `Brewfile`
+- Installs Homebrew packages declared in `Brewfile` without upgrading already-installed packages
 - Installs the current Node.js LTS with `fnm` when no default is configured yet
 - Installs agent integrations for RTK and Caveman when the required CLIs are available
 - Creates required directories automatically

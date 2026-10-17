@@ -143,7 +143,7 @@ install_brew_bundle() {
   fi
 
   log "Installing Homebrew packages from Brewfile"
-  "$BREW_BIN" bundle --file "$brewfile_path"
+  "$BREW_BIN" bundle install --no-upgrade --file "$brewfile_path"
   success "Installed Homebrew packages from Brewfile"
 
   if grep -q '^brew "fnm"$' "$brewfile_path"; then
