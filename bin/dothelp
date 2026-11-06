@@ -50,6 +50,63 @@ command_catalog() {
   ' "$readme"
 }
 
+format_catalog() {
+  local width
+
+  width="$(tput cols 2>/dev/null || printf '100')"
+  (( width > 120 )) && width=120
+  (( width < 60 )) && width=60
+
+  awk -F '\t' -v width="$width" '
+    {
+      category[NR] = $1
+      command[NR] = $2
+      description[NR] = $3
+      if (length($2) > command_width) {
+        command_width = length($2)
+      }
+    }
+    END {
+      if (command_width > width - 28) {
+        command_width = width - 28
+      }
+      description_width = width - command_width - 6
+
+      for (row = 1; row <= NR; row++) {
+        if (category[row] != previous_category) {
+          if (previous_category != "") {
+            print ""
+          }
+          print category[row]
+          previous_category = category[row]
+        }
+
+        if (length(command[row]) > command_width) {
+          print "  " command[row]
+          prefix = sprintf("    %-*s", command_width, "")
+        } else {
+          prefix = sprintf("  %-*s  ", command_width, command[row])
+        }
+
+        count = split(description[row], words, /[[:space:]]+/)
+        line = ""
+        for (word = 1; word <= count; word++) {
+          if (line == "") {
+            line = words[word]
+          } else if (length(line) + length(words[word]) + 1 <= description_width) {
+            line = line " " words[word]
+          } else {
+            print prefix line
+            prefix = sprintf("    %-*s", command_width, "")
+            line = words[word]
+          }
+        }
+        print prefix line
+      }
+    }
+  '
+}
+
 main() {
   local script_dir dotfiles_dir readme query catalog selection
 
@@ -74,7 +131,7 @@ main() {
       fi
       catalog="$(command_catalog "$readme")"
       selection="$(printf '%s\n' "$catalog" | fzf --delimiter=$'\t' --with-nth=2,3 --prompt='dotfiles command> ')" || return
-      printf '%s\n' "$selection" | column -t -s $'\t'
+      printf '%s\n' "$selection" | format_catalog
       return
       ;;
   esac
@@ -84,9 +141,9 @@ main() {
     command_catalog "$readme" | awk -F '\t' -v query="$query" '
       BEGIN { query = tolower(query) }
       index(tolower($0), query) { print }
-    ' | column -t -s $'\t'
+    ' | format_catalog
   else
-    command_catalog "$readme" | column -t -s $'\t'
+    command_catalog "$readme" | format_catalog
   fi
 }
 

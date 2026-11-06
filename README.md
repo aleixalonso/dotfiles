@@ -227,7 +227,8 @@ wsgo
 
 - `keepawake [command ...]` → temporarily disables sleep with `pmset disablesleep 1`, runs the command or waits until `Ctrl-C`, then restores the previous `SleepDisabled` value
 - `keepawake --status` → show whether `SleepDisabled` is currently enabled
-- `keepawake --on` / `keepawake --off` → manually toggle `SleepDisabled`
+- `keepawake --on` → enable `SleepDisabled`
+- `keepawake --off` → disable `SleepDisabled`
 - `keepawake --setup` → allow passwordless `pmset disablesleep` toggles; optional, since the default behavior uses normal `sudo`
 
 Examples:
