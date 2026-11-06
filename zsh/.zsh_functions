@@ -396,12 +396,49 @@ _gworktree_list() {
   '
 }
 
+_gworktree_create() {
+  local source_root="$1"
+  local worktree_path="$2"
+  local branch="$3"
+  local base="${4:-main}"
+  local setup_status setup_dirs_output setup_dir
+  local -a setup_dirs
+  local -A seen_setup_dirs
+
+  if git -C "$source_root" show-ref --verify --quiet "refs/heads/$branch"; then
+    git -C "$source_root" worktree add "$worktree_path" "$branch"
+  elif git -C "$source_root" ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+    git -C "$source_root" fetch origin "$branch" &&
+    git -C "$source_root" worktree add --track -b "$branch" "$worktree_path" "origin/$branch"
+  else
+    git -C "$source_root" fetch origin "$base" &&
+    git -C "$source_root" worktree add -b "$branch" "$worktree_path" "origin/$base"
+  fi || return 1
+
+  setup_dirs_output="$(
+    _gworktree_setup_dirs "$source_root"
+    _gworktree_setup_dirs "$worktree_path"
+  )"
+  for setup_dir in "${(@f)setup_dirs_output}"; do
+    [[ -n "$setup_dir" && -z "${seen_setup_dirs[$setup_dir]}" ]] || continue
+    seen_setup_dirs[$setup_dir]=1
+    setup_dirs+=("$setup_dir")
+  done
+
+  _gworktree_copy_env_files "$source_root" "$worktree_path" "${setup_dirs[@]}"
+  setup_status=$?
+  if (( setup_status == 0 )); then
+    _gworktree_install_deps "$worktree_path" "${setup_dirs[@]}"
+    setup_status=$?
+  fi
+
+  return "$setup_status"
+}
+
 gwnew() {
   local branch="$1"
   local base="${2:-main}"
-  local root primary_root repo parent worktree_path safe_branch existing_worktree setup_status setup_dirs_output setup_dir
-  local -a setup_dirs
-  local -A seen_setup_dirs
+  local root primary_root repo parent worktree_path safe_branch existing_worktree setup_status
 
   if [[ -z "$branch" ]]; then
     branch="$(_gbranch_pick "new worktree branch> ")" || return 1
@@ -436,32 +473,8 @@ gwnew() {
     return
   fi
 
-  if git show-ref --verify --quiet "refs/heads/$branch"; then
-    git worktree add "$worktree_path" "$branch"
-  elif git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
-    git fetch origin "$branch" &&
-    git worktree add --track -b "$branch" "$worktree_path" "origin/$branch"
-  else
-    git fetch origin "$base" &&
-    git worktree add -b "$branch" "$worktree_path" "origin/$base"
-  fi || return 1
-
-  setup_dirs_output="$(
-    _gworktree_setup_dirs "$root"
-    _gworktree_setup_dirs "$worktree_path"
-  )"
-  for setup_dir in "${(@f)setup_dirs_output}"; do
-    [[ -n "$setup_dir" && -z "${seen_setup_dirs[$setup_dir]}" ]] || continue
-    seen_setup_dirs[$setup_dir]=1
-    setup_dirs+=("$setup_dir")
-  done
-
-  _gworktree_copy_env_files "$root" "$worktree_path" "${setup_dirs[@]}"
+  _gworktree_create "$root" "$worktree_path" "$branch" "$base"
   setup_status=$?
-  if (( setup_status == 0 )); then
-    _gworktree_install_deps "$worktree_path" "${setup_dirs[@]}"
-    setup_status=$?
-  fi
 
   cd "$worktree_path" || return 1
   return "$setup_status"
@@ -558,6 +571,260 @@ gwrm() {
   if [[ "$answer" == [yY] ]]; then
     git worktree remove "$worktree_path"
   fi
+}
+
+_workspace_root() {
+  local dir="${1:-$PWD}"
+
+  dir="${dir:A}"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -f "$dir/.workspace" ]]; then
+      printf '%s\n' "$dir"
+      return
+    fi
+    dir="${dir:h}"
+  done
+
+  return 1
+}
+
+_workspace_value() {
+  local workspace_root="$1"
+  local key="$2"
+
+  awk -F '\t' -v key="$key" '$1 == key { print $2; exit }' "$workspace_root/.workspace"
+}
+
+_workspace_project_root() {
+  local dir="${1:-$PWD}"
+  local workspace_root
+
+  if workspace_root="$(_workspace_root "$dir")"; then
+    _workspace_value "$workspace_root" project_root
+    return
+  fi
+
+  dir="${dir:A}"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -d "$dir/workspaces" ]]; then
+      printf '%s\n' "$dir"
+      return
+    fi
+    dir="${dir:h}"
+  done
+
+  return 1
+}
+
+_workspace_repo_list() {
+  local project_root="$1"
+  local dir repo_root
+
+  for dir in "$project_root"/*(/N); do
+    [[ "${dir:t}" == "workspaces" ]] && continue
+    repo_root="$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null)" || continue
+    [[ "${repo_root:A}" == "${dir:A}" ]] || continue
+    printf '%s\t%s\n' "${dir:t}" "$dir"
+  done
+}
+
+_workspace_repo_pick() {
+  local project_root="$1"
+  local repos selection
+
+  repos="$(_workspace_repo_list "$project_root")"
+  if [[ -z "$repos" ]]; then
+    echo "no Git repositories found directly under $project_root" >&2
+    return 1
+  fi
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
+    printf '%s\n' "$repos"
+    return 1
+  fi
+
+  selection="$(printf '%s\n' "$repos" | fzf --delimiter=$'\t' --with-nth=1 --prompt="add repository> ")" || return 1
+  printf '%s\n' "${selection%%$'\t'*}"
+}
+
+_workspace_template_dir() {
+  local template_dir="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/workspace-templates"
+
+  if [[ ! -d "$template_dir" ]]; then
+    echo "workspace templates not found: $template_dir" >&2
+    echo "rerun the dotfiles installer" >&2
+    return 1
+  fi
+
+  printf '%s\n' "$template_dir"
+}
+
+_workspace_render_template() {
+  local source="$1"
+  local target="$2"
+  local workspace_name="$3"
+  local line
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    printf '%s\n' "${line//\{\{WORKSPACE_NAME\}\}/$workspace_name}"
+  done < "$source" > "$target"
+}
+
+wsnew() {
+  local workspace_name="$1"
+  local project_root workspace_root template_dir template
+
+  if [[ -z "$workspace_name" || "$workspace_name" == */* ]]; then
+    echo "usage: wsnew <workspace>" >&2
+    return 1
+  fi
+
+  project_root="${PWD:A}"
+  workspace_root="$project_root/workspaces/$workspace_name"
+  template_dir="$(_workspace_template_dir)" || return 1
+
+  if [[ -e "$workspace_root" ]]; then
+    if [[ -f "$workspace_root/.workspace" ]]; then
+      cd "$workspace_root"
+      return
+    fi
+    echo "path already exists and is not a workspace: $workspace_root" >&2
+    return 1
+  fi
+
+  mkdir -p "$workspace_root" || return 1
+  printf 'project_root\t%s\nworkspace_name\t%s\n' "$project_root" "$workspace_name" > "$workspace_root/.workspace"
+  for template in AGENTS.md WORKSPACE.md DECISIONS.md STATUS.md; do
+    _workspace_render_template "$template_dir/$template" "$workspace_root/$template" "$workspace_name" || return 1
+  done
+
+  cd "$workspace_root"
+}
+
+wsadd() {
+  local repo_name="$1"
+  local branch="$2"
+  local base="${3:-main}"
+  local workspace_root project_root source_root worktree_path setup_status
+
+  workspace_root="$(_workspace_root)" || {
+    echo "wsadd must be run from inside a workspace" >&2
+    return 1
+  }
+  project_root="$(_workspace_value "$workspace_root" project_root)" || return 1
+
+  if [[ -z "$repo_name" ]]; then
+    repo_name="$(_workspace_repo_pick "$project_root")" || return 1
+  fi
+  if [[ "$repo_name" == */* ]]; then
+    echo "repository must be a direct child name, not a path: $repo_name" >&2
+    return 1
+  fi
+
+  source_root="$project_root/$repo_name"
+  if [[ "$(git -C "$source_root" rev-parse --show-toplevel 2>/dev/null)" != "${source_root:A}" ]]; then
+    echo "not a Git repository: $source_root" >&2
+    return 1
+  fi
+
+  if [[ -z "$branch" ]]; then
+    printf 'branch> ' >&2
+    read -r branch
+  fi
+  if [[ -z "$branch" ]]; then
+    echo "branch is required" >&2
+    return 1
+  fi
+
+  worktree_path="$workspace_root/$repo_name"
+  if [[ -e "$worktree_path" ]]; then
+    echo "workspace repository already exists: $worktree_path" >&2
+    return 1
+  fi
+
+  _gworktree_create "$source_root" "$worktree_path" "$branch" "$base"
+  setup_status=$?
+  return "$setup_status"
+}
+
+_workspace_list() {
+  local project_root="$1"
+  local dir
+
+  for dir in "$project_root"/workspaces/*(/N); do
+    [[ -f "$dir/.workspace" ]] || continue
+    printf '%s\t%s\n' "${dir:t}" "$dir"
+  done
+}
+
+wslist() {
+  local project_root workspaces
+
+  project_root="$(_workspace_project_root)" || {
+    echo "no workspace project root found" >&2
+    return 1
+  }
+  workspaces="$(_workspace_list "$project_root")"
+  if [[ -z "$workspaces" ]]; then
+    echo "no workspaces found under $project_root" >&2
+    return 1
+  fi
+  printf '%s\n' "$workspaces" | column -t -s $'\t'
+}
+
+wsgo() {
+  local query="$1"
+  local project_root workspaces selection workspace_path
+
+  project_root="$(_workspace_project_root)" || {
+    echo "no workspace project root found" >&2
+    return 1
+  }
+  workspaces="$(_workspace_list "$project_root")"
+  if [[ -z "$workspaces" ]]; then
+    echo "no workspaces found under $project_root" >&2
+    return 1
+  fi
+
+  if [[ -z "$query" ]]; then
+    if ! command -v fzf >/dev/null 2>&1; then
+      echo "fzf is required for interactive selection. Install it with: brew install fzf" >&2
+      wslist
+      return 1
+    fi
+    selection="$(printf '%s\n' "$workspaces" | fzf --delimiter=$'\t' --with-nth=1 --prompt="switch workspace> ")" || return 1
+    workspace_path="${selection#*$'\t'}"
+  else
+    workspace_path="$(printf '%s\n' "$workspaces" | awk -F '\t' -v query="$query" '$1 == query { print $2; exit }')"
+    if [[ -z "$workspace_path" ]]; then
+      echo "no workspace found for: $query" >&2
+      wslist
+      return 1
+    fi
+  fi
+
+  cd "$workspace_path"
+}
+
+wsstatus() {
+  local workspace_root dir branch repo_status
+
+  workspace_root="$(_workspace_root)" || {
+    echo "wsstatus must be run from inside a workspace" >&2
+    return 1
+  }
+
+  {
+    printf 'WORKSPACE\t%s\n' "$(_workspace_value "$workspace_root" workspace_name)"
+    for dir in "$workspace_root"/*(/N); do
+      git -C "$dir" rev-parse --show-toplevel >/dev/null 2>&1 || continue
+      branch="$(git -C "$dir" branch --show-current)"
+      repo_status="$(git -c status.branch=false -C "$dir" status --short)"
+      [[ -n "$repo_status" ]] && repo_status="modified" || repo_status="clean"
+      printf '%s\t%s\t%s\n' "${dir:t}" "${branch:-(detached)}" "$repo_status"
+    done
+  } | column -t -s $'\t'
 }
 
 gsl() {

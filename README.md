@@ -181,6 +181,31 @@ gwgo
 gwrm
 ```
 
+#### Multi-repository workspaces
+
+- `wsnew <workspace>` → create `./workspaces/<workspace>` with shared AI context files, then enter it
+- `wsadd [repository] [branch] [base=main]` → add a direct child repository as a worktree in the current workspace; with no repository, pick one interactively with `fzf`
+- `wsgo [workspace]` → jump to a workspace in the current project; with no argument, pick one interactively with `fzf`
+- `wslist` → list workspaces in the current project
+- `wsstatus` → show the branch and status of every repository in the current workspace
+
+Each workspace includes `AGENTS.md`, `WORKSPACE.md`, `DECISIONS.md`, and `STATUS.md`, rendered from `zsh/workspace-templates/`. Launch the coding agent from the workspace root so it reads the shared instructions and can access every repository. The generated instructions tell the agent to maintain material decisions and verified progress without logging routine activity.
+
+Example workspace flow from a directory containing multiple repositories:
+
+```bash
+cd ~/work/aleix
+wsnew EPIC-100-login
+# enters ~/work/aleix/workspaces/EPIC-100-login
+
+wsadd backend feature/BE-101-login-api
+wsadd frontend feature/FE-102-login-screen
+wsadd admin feature/ADM-103-session-controls
+
+wsstatus
+wsgo
+```
+
 #### Stash
 
 - `gsl` → list Git stashes
