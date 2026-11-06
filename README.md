@@ -187,7 +187,8 @@ gwrm
 - `wsadd [repository] [branch] [base=main]` → add a direct child repository as a worktree in the current workspace; with no repository, pick one interactively with `fzf`
 - `wsgo [workspace]` → jump to a workspace in the current project; with no argument, pick one interactively with `fzf`
 - `wslist` → list workspaces in the current project
-- `wsstatus` → show the branch and status of every repository in the current workspace
+- `wsstatus` → show a workspace summary followed by detailed Git status for repositories with changes
+- `wsst` → shorthand for `wsstatus`
 
 Each workspace includes `AGENTS.md`, `WORKSPACE.md`, `DECISIONS.md`, and `STATUS.md`, rendered from `zsh/workspace-templates/`. Launch the coding agent from the workspace root so it reads the shared instructions and can access every repository. The generated instructions tell the agent to maintain material decisions and verified progress without logging routine activity.
 

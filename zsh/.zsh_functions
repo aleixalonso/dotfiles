@@ -809,22 +809,51 @@ wsgo() {
 
 wsstatus() {
   local workspace_root dir branch repo_status
+  local -a repo_dirs repo_names repo_branches repo_statuses
 
   workspace_root="$(_workspace_root)" || {
     echo "wsstatus must be run from inside a workspace" >&2
     return 1
   }
 
+  for dir in "$workspace_root"/*(/N); do
+    git -C "$dir" rev-parse --show-toplevel >/dev/null 2>&1 || continue
+    branch="$(git -C "$dir" branch --show-current)"
+    repo_status="$(git -c status.branch=false -C "$dir" status --short)"
+    repo_dirs+=("$dir")
+    repo_names+=("${dir:t}")
+    repo_branches+=("${branch:-(detached)}")
+    [[ -n "$repo_status" ]] && repo_statuses+=("modified") || repo_statuses+=("clean")
+  done
+
+  if (( ${#repo_dirs} == 0 )); then
+    echo "no repositories found in this workspace" >&2
+    return 1
+  fi
+
+  printf 'Workspace: %s\n\n' "$(_workspace_value "$workspace_root" workspace_name)"
   {
-    printf 'WORKSPACE\t%s\n' "$(_workspace_value "$workspace_root" workspace_name)"
-    for dir in "$workspace_root"/*(/N); do
-      git -C "$dir" rev-parse --show-toplevel >/dev/null 2>&1 || continue
-      branch="$(git -C "$dir" branch --show-current)"
-      repo_status="$(git -c status.branch=false -C "$dir" status --short)"
-      [[ -n "$repo_status" ]] && repo_status="modified" || repo_status="clean"
-      printf '%s\t%s\t%s\n' "${dir:t}" "${branch:-(detached)}" "$repo_status"
+    printf 'REPOSITORY\tBRANCH\tSTATUS\n'
+    local index
+    for (( index = 1; index <= ${#repo_dirs}; index++ )); do
+      printf '%s\t%s\t%s\n' "$repo_names[$index]" "$repo_branches[$index]" "$repo_statuses[$index]"
     done
   } | column -t -s $'\t'
+
+  local has_details=0
+  for (( index = 1; index <= ${#repo_dirs}; index++ )); do
+    [[ "$repo_statuses[$index]" == "modified" ]] || continue
+    if (( has_details == 0 )); then
+      printf '\nDetails\n'
+      has_details=1
+    fi
+    printf '\n%s\n' "$repo_names[$index]"
+    git -C "$repo_dirs[$index]" status --short --branch
+  done
+}
+
+wsst() {
+  wsstatus "$@"
 }
 
 gsl() {
