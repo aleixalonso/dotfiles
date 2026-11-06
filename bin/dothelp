@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+resolve_script_path() {
+  local path="${BASH_SOURCE[0]}"
+  local dir target
+
+  while [[ -L "$path" ]]; do
+    dir="$(cd "$(dirname "$path")" && pwd)"
+    target="$(readlink "$path")"
+    if [[ "$target" == /* ]]; then
+      path="$target"
+    else
+      path="$dir/$target"
+    fi
+  done
+
+  cd "$(dirname "$path")" && pwd
+}
+
+usage() {
+  printf '%s\n' \
+    "usage: dothelp [query]" \
+    "       dothelp --pick" \
+    "" \
+    "List custom dotfiles commands, filter them by text, or browse with fzf."
+}
+
+command_catalog() {
+  local readme="$1"
+
+  awk '
+    /^## Git shortcuts$/ { active = 1; next }
+    /^## macOS defaults$/ { active = 0 }
+    !active { next }
+    /^### / || /^#### / {
+      category = $0
+      sub(/^#+[[:space:]]+/, "", category)
+      next
+    }
+    /^- `[^`]+`/ {
+      line = $0
+      sub(/^- `/, "", line)
+      split(line, parts, "`")
+      command = parts[1]
+      description = line
+      sub(/^[^`]+`[^[:alnum:]]*/, "", description)
+      printf "%s\t%s\t%s\n", category, command, description
+    }
+  ' "$readme"
+}
+
+main() {
+  local script_dir dotfiles_dir readme query catalog selection
+
+  script_dir="$(resolve_script_path)"
+  dotfiles_dir="$(cd "$script_dir/.." && pwd)"
+  readme="$dotfiles_dir/README.md"
+
+  if [[ ! -f "$readme" ]]; then
+    echo "dotfiles README not found: $readme" >&2
+    exit 1
+  fi
+
+  case "${1:-}" in
+    -h|--help)
+      usage
+      return
+      ;;
+    --pick)
+      if ! command -v fzf >/dev/null 2>&1; then
+        echo "fzf is required for --pick" >&2
+        exit 1
+      fi
+      catalog="$(command_catalog "$readme")"
+      selection="$(printf '%s\n' "$catalog" | fzf --delimiter=$'\t' --with-nth=2,3 --prompt='dotfiles command> ')" || return
+      printf '%s\n' "$selection" | column -t -s $'\t'
+      return
+      ;;
+  esac
+
+  query="$*"
+  if [[ -n "$query" ]]; then
+    command_catalog "$readme" | awk -F '\t' -v query="$query" '
+      BEGIN { query = tolower(query) }
+      index(tolower($0), query) { print }
+    ' | column -t -s $'\t'
+  else
+    command_catalog "$readme" | column -t -s $'\t'
+  fi
+}
+
+main "$@"

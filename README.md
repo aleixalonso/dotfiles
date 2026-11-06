@@ -217,6 +217,12 @@ wsgo
 
 ## Shell utilities
 
+### Command discovery
+
+- `dothelp` → list the custom Git aliases, shell functions, and utilities documented in this README
+- `dothelp <query>` → filter the command catalog by command, category, or description
+- `dothelp --pick` → browse the command catalog interactively with `fzf`
+
 ### macOS sleep
 
 - `keepawake [command ...]` → temporarily disables sleep with `pmset disablesleep 1`, runs the command or waits until `Ctrl-C`, then restores the previous `SleepDisabled` value
