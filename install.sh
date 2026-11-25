@@ -415,6 +415,15 @@ main() {
 
   log "Using dotfiles repository: $DOTFILES_DIR"
 
+  if [[ $# -gt 0 ]]; then
+    if [[ $# -eq 1 && "$1" == "--skills-only" ]]; then
+      link_file "${DOTFILES_DIR}/agents/skills" "${HOME}/.agents/skills"
+      return
+    fi
+    error "Usage: ./install.sh [--skills-only]"
+    return 1
+  fi
+
   setup_homebrew
   ensure_dir "$CONFIG_DIR"
   install_brew_bundle

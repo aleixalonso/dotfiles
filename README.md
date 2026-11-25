@@ -83,6 +83,30 @@ source ~/.zshrc
 
 ## Agent integrations
 
+### Shared skills on a VPS
+
+Run these commands as the user that runs Hermes, Codex CLI, or OpenCode:
+
+```bash
+git clone https://github.com/aleixalonso/dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
+./install.sh --skills-only
+```
+
+This links `~/.agents/skills` to the checkout's `agents/skills` directory. Codex CLI and OpenCode discover skills there. If that path already contains a real directory, the installer moves it to a numbered or unnumbered `skills.backup` sibling first.
+
+For Hermes, add the shared directory to `skills.external_dirs` in the active profile's `config.yaml` (default `~/.hermes/config.yaml`). Keep any existing entries:
+
+```yaml
+skills:
+  external_dirs:
+    - ~/.agents/skills
+```
+
+Run `hermes skills list` and look for `grill-with-docs`. After pushing skill changes, run `git -C ~/.dotfiles pull --ff-only` on the VPS. The link picks up added, updated, and removed skills. Start a fresh agent session to use the updated catalog.
+
+### RTK
+
 - RTK instructions are linked into both `~/.codex/RTK.md` and `~/.claude/RTK.md`
 - RTK is installed through Homebrew from `Brewfile`
 - Claude uses `rtk hook claude` through `claude/settings.json`
