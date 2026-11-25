@@ -50,13 +50,6 @@ git diff -- agents/skills
 
 Then update the synced revisions above if the upstream commits changed.
 
-## Local invocation policy
-
-These skills are intentionally user-invoked. Upstream does not always set that, so the local copies add:
-
-- `disable-model-invocation: true` to every `SKILL.md` frontmatter.
-- `policy.allow_implicit_invocation: false` to every `agents/openai.yaml` when that file exists.
-
-The `rsync --delete` commands above overwrite these local changes. Reapply the policy after syncing so skills are not loaded automatically into every session.
+The vendored skills use each client's default invocation settings. After syncing, check that upstream metadata still allows automatic invocation.
 
 `resolving-merge-conflicts` is intentionally not synced. Upstream removed it and nothing replaces it; the local copy is maintained here.

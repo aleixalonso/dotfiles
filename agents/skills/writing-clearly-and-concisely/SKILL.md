@@ -1,7 +1,6 @@
 ---
 name: writing-clearly-and-concisely
 description: Apply Strunk's timeless writing rules to ANY prose humans will read—documentation, commit messages, error messages, explanations, reports, or UI text. Makes your writing clearer, stronger, and more professional.
-disable-model-invocation: true
 ---
 
 # Writing Clearly and Concisely
