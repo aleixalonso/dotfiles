@@ -14,11 +14,14 @@ These skills are vendored into this repository. `install.sh` links them but does
 | `grilling` | `mattpocock/skills` | `skills/productivity/grilling` |
 | `improve-codebase-architecture` | `mattpocock/skills` | `skills/engineering/improve-codebase-architecture` |
 | `resolving-merge-conflicts` | local only | originally from `mattpocock/skills`, removed upstream in v1.3.0 |
+| `code-review` | `mattpocock/skills` | `skills/engineering/code-review` |
+| `implement` | `mattpocock/skills` | `skills/engineering/implement` |
+| `tdd` | `mattpocock/skills` | `skills/engineering/tdd` |
 | `writing-clearly-and-concisely` | `obra/the-elements-of-style` | `skills/writing-clearly-and-concisely` |
 
 Last synced revisions:
 
-- `mattpocock/skills` at `49dd158d1076134a641b33efb035946536778336` (2026-10-09, package v1.3.1)
+- `mattpocock/skills` at `6f7f7831a625f040a8e06a0e7954826b87ce775a` (2026-11-25, package v1.3.2)
 - `vercel-labs/skills` at `13e4063a1cf913f5606d57d42ab83a86f5001e04` (2026-10-09)
 - `obra/the-elements-of-style` at `05fc4f0d2b97b7c042dd9949ad658568e4a1324e` (2026-08-12)
 
@@ -42,6 +45,9 @@ rsync -a --delete "$tmp/mattpocock/skills/productivity/grill-me/" agents/skills/
 rsync -a --delete "$tmp/mattpocock/skills/engineering/grill-with-docs/" agents/skills/grill-with-docs/
 rsync -a --delete "$tmp/mattpocock/skills/productivity/grilling/" agents/skills/grilling/
 rsync -a --delete "$tmp/mattpocock/skills/engineering/improve-codebase-architecture/" agents/skills/improve-codebase-architecture/
+rsync -a --delete "$tmp/mattpocock/skills/engineering/code-review/" agents/skills/code-review/
+rsync -a --delete "$tmp/mattpocock/skills/engineering/implement/" agents/skills/implement/
+rsync -a --delete "$tmp/mattpocock/skills/engineering/tdd/" agents/skills/tdd/
 rsync -a --delete "$tmp/vercel-labs/skills/find-skills/" agents/skills/find-skills/
 rsync -a --delete "$tmp/the-elements-of-style/skills/writing-clearly-and-concisely/" agents/skills/writing-clearly-and-concisely/
 
